@@ -149,7 +149,7 @@ endif (GLOG_FOUND)
 
 # Ceres
 message("-- Check for Ceres")
-find_package(Ceres REQUIRED SuiteSparse)
+find_package(Ceres REQUIRED)
 if (CERES_FOUND)
   message("-- Found Ceres: ${CERES_INCLUDE_DIRS}")
 else (CERES_FOUND)
@@ -168,31 +168,31 @@ else (OPENIMAGEIO_FOUND)
 endif (OPENIMAGEIO_FOUND)
 
 # Suitesparse
-find_package(SuiteSparse REQUIRED)
-if (SUITESPARSE_FOUND)
-  # On Ubuntu the system install of SuiteSparse (v3.4.0) up to at least
-  # Ubuntu 13.10 cannot be used to link shared libraries.
-  if (BUILD_SHARED_LIBS AND
-      SUITESPARSE_IS_BROKEN_SHARED_LINKING_UBUNTU_SYSTEM_VERSION)
-    message(FATAL_ERROR "You are attempting to build Theia as a shared "
-      "library on Ubuntu using a system package install of SuiteSparse "
-      "3.4.0. This package is broken and does not support the "
-      "construction of shared libraries (you can still build Theia as "
-      "a static library).  If you wish to build a shared version of Theia "
-      "you should uninstall the system install of SuiteSparse "
-      "(libsuitesparse-dev) and perform a source install of SuiteSparse "
-      "(we recommend that you use the latest version), "
-      "see http://theia-solver.org/building.html for more information.")
-  endif (BUILD_SHARED_LIBS AND
-    SUITESPARSE_IS_BROKEN_SHARED_LINKING_UBUNTU_SYSTEM_VERSION)
-  message("-- Found SuiteSparse ${SUITESPARSE_VERSION}")
-  add_definitions(-DTHEIA_SUITESPARSE_VERSION="${SUITESPARSE_VERSION}")
-else (SUITESPARSE_FOUND)
-  # Disable use of SuiteSparse if it cannot be found and continue.
-  message(FATAL_ERROR "Can't find SuiteSparse. This library is required "
-    "for bundle adjustment and for solving convex optimization problems. "
-    "Please set SUITESPARSE_INCLUDE_DIR & SUITESPARSE_LIBRARY")
-endif (SUITESPARSE_FOUND)
+#find_package(SuiteSparse REQUIRED)
+#if (SUITESPARSE_FOUND)
+#  # On Ubuntu the system install of SuiteSparse (v3.4.0) up to at least
+#  # Ubuntu 13.10 cannot be used to link shared libraries.
+#  if (BUILD_SHARED_LIBS AND
+#      SUITESPARSE_IS_BROKEN_SHARED_LINKING_UBUNTU_SYSTEM_VERSION)
+#    message(FATAL_ERROR "You are attempting to build Theia as a shared "
+#      "library on Ubuntu using a system package install of SuiteSparse "
+#      "3.4.0. This package is broken and does not support the "
+#      "construction of shared libraries (you can still build Theia as "
+#      "a static library).  If you wish to build a shared version of Theia "
+#      "you should uninstall the system install of SuiteSparse "
+#      "(libsuitesparse-dev) and perform a source install of SuiteSparse "
+#      "(we recommend that you use the latest version), "
+#      "see http://theia-solver.org/building.html for more information.")
+#  endif (BUILD_SHARED_LIBS AND
+#    SUITESPARSE_IS_BROKEN_SHARED_LINKING_UBUNTU_SYSTEM_VERSION)
+#  message("-- Found SuiteSparse ${SUITESPARSE_VERSION}")
+#  add_definitions(-DTHEIA_SUITESPARSE_VERSION="${SUITESPARSE_VERSION}")
+#else (SUITESPARSE_FOUND)
+#  # Disable use of SuiteSparse if it cannot be found and continue.#
+#  message(FATAL_ERROR "Can't find SuiteSparse. This library is required "
+#    "for bundle adjustment and for solving convex optimization problems. "
+#    "Please set SUITESPARSE_INCLUDE_DIR & SUITESPARSE_LIBRARY")
+#endif (SUITESPARSE_FOUND)
 
 
 # RocksDB
@@ -222,7 +222,6 @@ include_directories(
   ${OPENIMAGEIO_INCLUDE_DIRS}
   ${RAPIDJSON_INCLUDE_DIRS}
   ${ROCKSDB_INCLUDE_DIR}
-  ${SUITESPARSE_INCLUDE_DIRS}
 )
 
 # NOTE: This fix came from Ceres solver with the following comment:
@@ -345,5 +344,4 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfig.cmake"
               "${CMAKE_SOURCE_DIR}/cmake/FindGflags.cmake"
 	            "${CMAKE_SOURCE_DIR}/cmake/FindOpenImageIO.cmake"
               "${CMAKE_SOURCE_DIR}/cmake/FindRocksDB.cmake"
-              "${CMAKE_SOURCE_DIR}/cmake/FindSuiteSparse.cmake"
               DESTINATION ${CMAKECONFIG_INSTALL_DIR})
