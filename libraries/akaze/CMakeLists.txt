@@ -108,7 +108,7 @@ TARGET_LINK_LIBRARIES(akaze_features akaze ${CIMG_LIBRARIES})
 
 # Demo program matching akaze features.
 ADD_EXECUTABLE(akaze_match akaze_match.cpp)
-TARGET_LINK_LIBRARIES(akaze_match akaze ${CIMG_LIBRARIES} ${AKAZE_MATCH_BASE_LIBRARIES})
+TARGET_LINK_LIBRARIES(akaze_match akaze ${CIMG_LIBRARIES} ${AKAZE_MATCH_BASE_LIBRARIES} pthread)
 
 install(TARGETS akaze
   EXPORT  TheiaExport
