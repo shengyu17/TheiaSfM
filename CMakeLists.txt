@@ -110,6 +110,14 @@ if (EIGEN_FOUND)
   message("-- Found Eigen version ${EIGEN_VERSION}: ${EIGEN_INCLUDE_DIRS}")
 endif (EIGEN_FOUND)
 
+# OpenCV
+set(MIN_OCV_VERSION 4.1.0)
+find_package(OpenCV ${MIN_OCV_VERSION} REQUIRED)
+if (OpenCV_FOUND)
+    add_definitions(-DSRRG_HBST_HAS_OPENCV)
+    message("-- Found OpenCV_FOUND version ${OpenCV_VERSION}: ${OpenCV_INCLUDE_DIRS}")
+endif (OpenCV_FOUND)
+
 # Use a larger inlining threshold for Clang, since it hobbles Eigen,
 # resulting in an unreasonably slow version of the blas routines. The
 # -Qunused-arguments is needed because CMake passes the inline
@@ -174,6 +182,7 @@ include_directories(
   include
   src
   ${CERES_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${GFLAGS_INCLUDE_DIRS}
   ${GLOG_INCLUDE_DIRS}
   ${OPENIMAGEIO_INCLUDE_DIRS}
