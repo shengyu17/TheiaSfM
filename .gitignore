@@ -1,0 +1,7 @@
+3rdParty
+build
+install
+CMakeLists.txt.user
+*.log
+.directory
+.kate-swp
