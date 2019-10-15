@@ -96,7 +96,7 @@ DEFINE_int32(matching_max_num_images_in_cache,
              "consumed during matching.");
 DEFINE_double(lowes_ratio, 0.8, "Lowes ratio used for feature matching.");
 DEFINE_double(max_sampson_error_for_verified_match,
-              4.0,
+              3.0,
               "Maximum sampson error for a match to be considered "
               "geometrically valid. This threshold is relative to an image "
               "with a width of 1024 pixels and will be appropriately scaled "
