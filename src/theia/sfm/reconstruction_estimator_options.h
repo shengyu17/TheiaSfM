@@ -45,6 +45,15 @@
 
 namespace theia {
 
+// Perform bundle adjustment together (extrinsics & intrinsics), separately 
+// (extrinsics & later intrinsics) or hybrid (perform extrinsics, 
+// intrinsics & optimize both).
+enum class BundleAdjustmentType {
+  TOGETHER = 0,
+  SEPARATE = 1,
+  HYBRID = 2
+};
+
 // Global SfM methods are considered to be more scalable while incremental SfM
 // is less scalable but often more robust.
 enum class ReconstructionEstimatorType {
@@ -81,6 +90,10 @@ struct ReconstructionEstimatorOptions {
   // Type of reconstruction estimation to use.
   ReconstructionEstimatorType reconstruction_estimator_type =
       ReconstructionEstimatorType::GLOBAL;
+
+  // Type of bundle adjustment to perform.
+  BundleAdjustmentType bundle_adjustment_type =
+      BundleAdjustmentType::TOGETHER;
 
   // If Global SfM is desired, which type of rotation and position estimation
   // methods are used.
@@ -256,7 +269,10 @@ struct ReconstructionEstimatorOptions {
   OptimizeIntrinsicsType intrinsics_to_optimize =
       OptimizeIntrinsicsType::FOCAL_LENGTH |
       OptimizeIntrinsicsType::RADIAL_DISTORTION;
-
+  
+  // If enabled, the 3d points will not be optimized during bundle adjustment.
+  bool constant_track_point = false;
+  
   // --------------- Track Subsampling Options --------------- //
 
   // Bundle adjustment performs joint nonlinear optimization of point positions

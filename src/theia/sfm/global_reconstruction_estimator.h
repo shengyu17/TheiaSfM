@@ -86,6 +86,12 @@ class GlobalReconstructionEstimator : public ReconstructionEstimator {
   bool EstimatePosition();
   void EstimateStructure();
   bool BundleAdjustment();
+  // Bundle adjust only the camera orientations, positions and points. 
+  // The intrinsics are held constant.
+  bool BundleAdjustmentExtrinsics();
+  // Bundle adjust only the intrinsics and points. The camera orientations
+  //  and positions are held constant.
+  bool BundleAdjustmentIntrinsics();
   // Bundle adjust only the camera positions and points. The camera orientations
   // and intrinsics are held constant.
   bool BundleAdjustCameraPositionsAndPoints();

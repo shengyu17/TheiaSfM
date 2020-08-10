@@ -249,10 +249,42 @@ ReconstructionEstimatorSummary GlobalReconstructionEstimator::Estimate(
     // Step 9. Bundle Adjustment.
     LOG(INFO) << "Performing bundle adjustment.";
     timer.Reset();
-    if (!BundleAdjustment()) {
-      summary.success = false;
-      LOG(WARNING) << "Bundle adjustment failed!";
-      return summary;
+    // Perform bundle adjustment for both extrinsics & intrinsics at the same time.
+    if (options_.bundle_adjustment_type == BundleAdjustmentType::TOGETHER) {
+      if (!BundleAdjustment()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment failed!";
+        return summary;
+      }
+    // Perform bundle adjustment for only extrinsics first, then intrinsics.
+    } else if (options_.bundle_adjustment_type == BundleAdjustmentType::SEPARATE) {
+      if (!BundleAdjustmentExtrinsics()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment without intrinsics failed!";
+        return summary;
+      }
+      if (!BundleAdjustmentIntrinsics()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment with intrinsics failed!";
+        return summary;
+      }
+    // Perform bundle adjustment for extrinsics first, intrinsics and finally for both at the same time.
+    } else if (options_.bundle_adjustment_type == BundleAdjustmentType::HYBRID) {
+      if (!BundleAdjustmentExtrinsics()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment without intrinsics failed!";
+        return summary;
+      }
+      if (!BundleAdjustmentIntrinsics()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment with intrinsics failed!";
+        return summary;
+      }
+      if (!BundleAdjustment()) {
+        summary.success = false;
+        LOG(WARNING) << "Bundle adjustment failed!";
+        return summary;
+      }
     }
     summary.bundle_adjustment_time += timer.ElapsedTimeInSeconds();
 
@@ -455,6 +487,94 @@ bool GlobalReconstructionEstimator::BundleAdjustment() {
   // Bundle adjustment.
   bundle_adjustment_options_ =
       SetBundleAdjustmentOptions(options_, positions_.size());
+
+  // If desired, select good tracks to optimize for BA. This dramatically
+  // reduces the number of parameters in bundle adjustment, and does a decent
+  // job of filtering tracks with outliers that may slow down the nonlinear
+  // optimization.
+  std::unordered_set<TrackId> tracks_to_optimize;
+  if (options_.subsample_tracks_for_bundle_adjustment &&
+      SelectGoodTracksForBundleAdjustment(
+          *reconstruction_,
+          options_.track_subset_selection_long_track_length_threshold,
+          options_.track_selection_image_grid_cell_size_pixels,
+          options_.min_num_optimized_tracks_per_view,
+          &tracks_to_optimize)) {
+    // Set all tracks that were not chosen for BA to be unestimated so that they
+    // do not affect the bundle adjustment optimization.
+    const auto& view_ids = reconstruction_->ViewIds();
+    SetTracksInViewsToUnestimated(view_ids,
+                                  tracks_to_optimize,
+                                  reconstruction_);
+  } else {
+    GetEstimatedTracksFromReconstruction(*reconstruction_, &tracks_to_optimize);
+  }
+  LOG(INFO) << "Selected " << tracks_to_optimize.size()
+            << " tracks to optimize.";
+
+  std::unordered_set<ViewId> views_to_optimize;
+  GetEstimatedViewsFromReconstruction(*reconstruction_,
+                                      &views_to_optimize);
+  const auto& bundle_adjustment_summary =
+      BundleAdjustPartialReconstruction(bundle_adjustment_options_,
+                                        views_to_optimize,
+                                        tracks_to_optimize,
+                                        reconstruction_);
+  return bundle_adjustment_summary.success;
+}
+
+bool GlobalReconstructionEstimator::BundleAdjustmentExtrinsics() {
+  LOG(INFO) << "BundleAdjustmentExtrinsics";
+  // Bundle adjustment, only for extrinsics & points.
+  bundle_adjustment_options_ =
+      SetBundleAdjustmentOptions(options_, positions_.size());
+  bundle_adjustment_options_.constant_camera_orientation = false;
+  bundle_adjustment_options_.constant_camera_position = false;
+  bundle_adjustment_options_.intrinsics_to_optimize =
+      OptimizeIntrinsicsType::NONE;
+
+  // If desired, select good tracks to optimize for BA. This dramatically
+  // reduces the number of parameters in bundle adjustment, and does a decent
+  // job of filtering tracks with outliers that may slow down the nonlinear
+  // optimization.
+  std::unordered_set<TrackId> tracks_to_optimize;
+  if (options_.subsample_tracks_for_bundle_adjustment &&
+      SelectGoodTracksForBundleAdjustment(
+          *reconstruction_,
+          options_.track_subset_selection_long_track_length_threshold,
+          options_.track_selection_image_grid_cell_size_pixels,
+          options_.min_num_optimized_tracks_per_view,
+          &tracks_to_optimize)) {
+    // Set all tracks that were not chosen for BA to be unestimated so that they
+    // do not affect the bundle adjustment optimization.
+    const auto& view_ids = reconstruction_->ViewIds();
+    SetTracksInViewsToUnestimated(view_ids,
+                                  tracks_to_optimize,
+                                  reconstruction_);
+  } else {
+    GetEstimatedTracksFromReconstruction(*reconstruction_, &tracks_to_optimize);
+  }
+  LOG(INFO) << "Selected " << tracks_to_optimize.size()
+            << " tracks to optimize.";
+
+  std::unordered_set<ViewId> views_to_optimize;
+  GetEstimatedViewsFromReconstruction(*reconstruction_,
+                                      &views_to_optimize);
+  const auto& bundle_adjustment_summary =
+      BundleAdjustPartialReconstruction(bundle_adjustment_options_,
+                                        views_to_optimize,
+                                        tracks_to_optimize,
+                                        reconstruction_);
+  return bundle_adjustment_summary.success;
+}
+
+bool GlobalReconstructionEstimator::BundleAdjustmentIntrinsics() {
+  LOG(INFO) << "BundleAdjustmentIntrinsics";
+  // Bundle adjustment, only for intrinsics and points.
+  bundle_adjustment_options_ =
+      SetBundleAdjustmentOptions(options_, positions_.size());
+  bundle_adjustment_options_.constant_camera_orientation = true;
+  bundle_adjustment_options_.constant_camera_position = true;
 
   // If desired, select good tracks to optimize for BA. This dramatically
   // reduces the number of parameters in bundle adjustment, and does a decent
