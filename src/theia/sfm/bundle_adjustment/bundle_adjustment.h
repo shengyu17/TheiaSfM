@@ -104,6 +104,9 @@ struct BundleAdjustmentOptions {
       OptimizeIntrinsicsType::FOCAL_LENGTH |
       OptimizeIntrinsicsType::RADIAL_DISTORTION;
 
+  // If true, the 3d track points will not be optimized during bundle adjustment.
+  bool constant_track_point = false;
+
   int num_threads = 1;
   int max_num_iterations = 100;
 

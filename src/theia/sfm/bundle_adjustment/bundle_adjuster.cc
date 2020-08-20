@@ -175,7 +175,12 @@ void BundleAdjuster::AddTrack(const TrackId track_id) {
     potentially_constant_camera_intrinsics_groups_.emplace(intrinsics_group_id);
   }
 
-  SetTrackVariable(track_id);
+  // Set the 3d point in the track as a constant for the problem.
+  if (options_.constant_track_point)  {
+    SetTrackConstant(track_id);
+  } else {
+    SetTrackVariable(track_id);
+  }
   SetTrackSchurGroup(track_id);
 }
 
