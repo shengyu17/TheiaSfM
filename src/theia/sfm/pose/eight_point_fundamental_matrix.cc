@@ -51,6 +51,14 @@ using Eigen::Matrix;
 using Eigen::Vector2d;
 using Eigen::Vector3d;
 
+std::tuple<bool, Eigen::Matrix3d> NormalizedEightPointFundamentalMatrixWrapper(
+        const std::vector<Vector2d> &image_1_points,
+        const std::vector<Vector2d> &image_2_points){
+    Matrix3d fundamental_matrix;
+    const bool success = NormalizedEightPointFundamentalMatrix(image_1_points, image_2_points, &fundamental_matrix);
+    return std::make_tuple(success, fundamental_matrix);
+}
+
 bool NormalizedEightPointFundamentalMatrix(
     const std::vector<Vector2d>& image_1_points,
     const std::vector<Vector2d>& image_2_points,

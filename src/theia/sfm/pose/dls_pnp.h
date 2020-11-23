@@ -42,6 +42,10 @@
 #include "theia/alignment/alignment.h"
 
 namespace theia {
+
+std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> DlsPnpWrapper(const std::vector<Eigen::Vector2d>& feature_positions,
+            const std::vector<Eigen::Vector3d>& world_point);
+
 // Computes the camera pose using the Perspective N-point method from "A Direct
 // Least-Squares (DLS) Method for PnP" by Joel Hesch and Stergios
 // Roumeliotis. This method is extremely scalable and highly accurate for the

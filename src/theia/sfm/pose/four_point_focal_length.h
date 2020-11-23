@@ -56,6 +56,9 @@ namespace theia {
 //     length)
 // Output: int: number of solutions if correct execution
 //             -1 if invalid.
+std::tuple<int, std::vector<Eigen::Matrix<double, 3, 4>>> FourPointPoseAndFocalLengthWrapper(const std::vector<Eigen::Vector2d>& feature_vectors,
+                                       const std::vector<Eigen::Vector3d>& world_points);
+
 int FourPointPoseAndFocalLength(
     const std::vector<Eigen::Vector2d>& feature_vectors,
     const std::vector<Eigen::Vector3d>& world_points,

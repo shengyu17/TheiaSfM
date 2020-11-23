@@ -56,6 +56,17 @@ using dls_impl::CreateMacaulayMatrix;
 using dls_impl::ExtractJacobianCoefficients;
 using dls_impl::LeftMultiplyMatrix;
 
+std::tuple<std::vector<Quaterniond>, std::vector<Vector3d>> DlsPnpWrapper(const std::vector<Vector2d>& feature_positions,
+                                                                                        const std::vector<Vector3d>& world_point){
+    std::vector<Quaterniond> solution_rotation;
+    std::vector<Vector3d> solution_translation;
+    DlsPnp(feature_positions, world_point, &solution_rotation, &solution_translation);
+    return std::make_tuple(solution_rotation, solution_translation);
+
+}
+
+
+
 // This implementation is ported from the Matlab version provided by the authors
 // of "A Direct Least-Squares (DLS) Method for PnP". The general approach is to
 // first rewrite the reprojection constraint (i.e., cost function) such that all

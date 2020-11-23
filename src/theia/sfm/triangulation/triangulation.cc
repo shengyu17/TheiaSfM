@@ -105,6 +105,16 @@ void FindOptimalImagePoints(const Matrix3d& ematrix,
 
 }  // namespace
 
+std::tuple<bool, Vector4d> TriangulateWrapper(const Matrix3x4d& pose1,
+                 const Matrix3x4d& pose2,
+                 const Vector2d& point1,
+                 const Vector2d& point2){
+    Vector4d triangulated_point;
+    bool success = Triangulate(pose1, pose2, point1, point2, &triangulated_point);
+    return std::make_tuple(success, triangulated_point);
+
+}
+
 // Triangulates 2 posed views
 bool Triangulate(const Matrix3x4d& pose1,
                  const Matrix3x4d& pose2,
@@ -123,6 +133,15 @@ bool Triangulate(const Matrix3x4d& pose1,
   return TriangulateDLT(
       pose1, pose2, corrected_point1, corrected_point2, triangulated_point);
 }
+
+std::tuple<bool, Vector4d> TriangulateMidpointWrapper(const std::vector<Vector3d>& origins,
+                                                             const std::vector<Vector3d>& ray_directions){
+    Vector4d triangulated_point;
+    const bool success = TriangulateMidpoint(origins, ray_directions, &triangulated_point);
+    return std::make_tuple(success, triangulated_point);
+
+}
+
 
 // Triangulates a 3D point by determining the closest point between the two
 // rays. This method is known to be suboptimal in terms of reprojection error
@@ -156,6 +175,19 @@ bool TriangulateMidpoint(const std::vector<Vector3d>& ray_origin,
   return linear_solver.info() == Eigen::Success;
 }
 
+
+std::tuple<bool, Vector4d> TriangulateDLTWrapper(const Matrix3x4d& pose1,
+                    const Matrix3x4d& pose2,
+                    const Vector2d& point1,
+                    const Vector2d& point2){
+    Vector4d triangulated_point;
+    const bool success = TriangulateDLT(pose1, pose2, point1, point2, &triangulated_point);
+    return std::make_tuple(success, triangulated_point);
+
+}
+
+
+
 // Triangulates 2 posed views
 bool TriangulateDLT(const Matrix3x4d& pose1,
                     const Matrix3x4d& pose2,
@@ -173,6 +205,18 @@ bool TriangulateDLT(const Matrix3x4d& pose1,
       design_matrix.jacobiSvd(Eigen::ComputeFullV).matrixV().rightCols<1>();
   return true;
 }
+
+
+std::tuple<bool, Vector4d> TriangulateNViewSVDWrapper(
+    const std::vector<Matrix3x4d>& poses,
+        const std::vector<Vector2d>& points){
+    Vector4d triangulated_point;
+    const bool success = TriangulateNViewSVD(poses, points, &triangulated_point);
+    return std::make_tuple(success, triangulated_point);
+
+};
+
+
 
 // Triangulates N views by computing SVD that minimizes the error.
 bool TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
@@ -193,6 +237,14 @@ bool TriangulateNViewSVD(const std::vector<Matrix3x4d>& poses,
                             .head(4);
   return true;
 }
+
+std::tuple<bool, Vector4d> TriangulateNViewWrapper(const std::vector<Matrix3x4d>& poses,
+                                                   const std::vector<Vector2d>& points){
+    Vector4d triangulated_point;
+    const bool success = TriangulateNView(poses, points, &triangulated_point);
+    return std::make_tuple(success, triangulated_point);
+}
+
 
 bool TriangulateNView(const std::vector<Matrix3x4d>& poses,
                       const std::vector<Vector2d>& points,

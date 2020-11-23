@@ -140,6 +140,24 @@ bool SolveQEP(const Matrix4d& M, const Matrix4d& C, const Matrix4d& K,
 
 }  // namespace
 
+std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> FourPointRelativePosePartialRotationWrapper(
+    const Vector3d& rotation_axis,
+    const std::vector<Vector3d> image_one_ray_directions_in,
+    const std::vector<Vector3d> image_one_ray_origins_in,
+    const std::vector<Vector3d> image_two_ray_directions_in,
+    const std::vector<Vector3d> image_two_ray_origins_in){
+    std::vector<Quaterniond> soln_rotations;
+    std::vector<Vector3d> soln_translations;
+    const Vector3d image_one_ray_directions[4] = {image_one_ray_directions_in[0],image_one_ray_directions_in[1],image_one_ray_directions_in[2],image_one_ray_directions_in[3]};
+    const Vector3d image_one_ray_origins[4] = {image_one_ray_origins_in[0],image_one_ray_origins_in[1],image_one_ray_origins_in[2],image_one_ray_origins_in[3]};
+    const Vector3d image_two_ray_directions[4] = {image_two_ray_directions_in[0],image_two_ray_directions_in[1],image_two_ray_directions_in[2],image_two_ray_directions_in[3]};
+    const Vector3d image_two_ray_origins[4] = {image_two_ray_origins_in[0],image_two_ray_origins_in[1],image_two_ray_origins_in[2],image_two_ray_origins_in[3]};
+    FourPointRelativePosePartialRotation(rotation_axis, image_one_ray_directions, image_one_ray_origins, image_two_ray_directions, image_two_ray_origins, &soln_rotations, &soln_translations);
+    return std::make_tuple(soln_rotations, soln_translations);
+}
+
+
+
 void FourPointRelativePosePartialRotation(
     const Vector3d& axis,
     const Vector3d image_one_ray_directions[4],

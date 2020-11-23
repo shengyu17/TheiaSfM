@@ -61,12 +61,26 @@ using Matrix42d = Eigen::Matrix<double, 4, 2>;
 using Vector8d  = Eigen::Matrix<double, 8, 1>;
 using Vector5d  = Eigen::Matrix<double, 5, 1>;
 using Eigen::Map;
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 using Eigen::Matrix4d;
 using Eigen::Matrix3d;
 using Eigen::MatrixXd;
 using Eigen::Matrix;
+
+
+std::tuple<bool, std::vector<Matrix3d>, std::vector<Vector3d>, std::vector<double>, std::vector<double>> FourPointsPoseFocalLengthRadialDistortionWrapper(
+    const std::vector<Vector2d>& feature_vectors,
+        const std::vector<Vector3d>& world_points){
+    std::vector<Matrix3d> rotations;
+    std::vector<Vector3d> translations;
+    std::vector<double> radial_distortions;
+    std::vector<double> focal_lengths;
+    const bool success = FourPointsPoseFocalLengthRadialDistortion(feature_vectors, world_points, &rotations, &translations, &radial_distortions, &focal_lengths);
+    return std::make_tuple(success, rotations, translations, radial_distortions, focal_lengths);
+}
+
 
 bool FourPointsPoseFocalLengthRadialDistortion(
     const std::vector<Eigen::Vector2d>& feature_vectors,

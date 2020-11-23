@@ -37,6 +37,7 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include "theia/util/python_types.h"
 
 namespace theia {
 // Computes camera pose using the three point algorithm and returns all possible
@@ -57,7 +58,10 @@ bool PoseFromThreePoints(const Eigen::Vector2d feature_point[3],
                          const Eigen::Vector3d world_point[3],
                          std::vector<Eigen::Matrix3d>* solution_rotations,
                          std::vector<Eigen::Vector3d>* solution_translations);
-
+std::tuple<bool, std::vector<Eigen::Matrix3d>, std::vector<Eigen::Vector3d>> PoseFromThreePointsWrapper(const std::vector<Eigen::Vector2d>& feature_points_in,
+                           const std::vector<Eigen::Vector3d>& points_3d_in);
+std::vector<Eigen::Matrix<double,7,1>> PoseFromThreePointsPY(const std::vector<Eigen::Vector2d>& feature_points,
+                                 const std::vector<Eigen::Vector3d>& points3d);
 }  // namespace theia
 
 #endif  // THEIA_SFM_POSE_PERSPECTIVE_THREE_POINT_H_

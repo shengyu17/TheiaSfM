@@ -40,12 +40,12 @@
 #include "theia/sfm/camera_intrinsics_prior.h"
 #include "theia/io/read_calibration.h"
 
-DEFINE_string(json_file, "io/calibration_test.json", "JSON testing file.");
+//DEFINE_string(json_file, "io/calibration_test.json", "JSON testing file.");
 
 namespace theia {
 namespace {
 
-std::string json_filepath = THEIA_DATA_DIR + std::string("/") + FLAGS_json_file;
+std::string json_filepath = THEIA_DATA_DIR + std::string("/"); // + FLAGS_json_file;
 
 static const char* kPinholeStr = "PINHOLE";
 static const char* kPinholeRadialTangentialStr = "PINHOLE_RADIAL_TANGENTIAL";

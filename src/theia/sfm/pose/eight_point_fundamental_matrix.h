@@ -60,6 +60,10 @@ bool NormalizedEightPointFundamentalMatrix(
     const std::vector<Eigen::Vector2d>& image_2_points,
     Eigen::Matrix3d* fundamental_matrix);
 
+std::tuple<bool, Eigen::Matrix3d> NormalizedEightPointFundamentalMatrixWrapper(
+    const std::vector<Eigen::Vector2d>& image_1_points,
+    const std::vector<Eigen::Vector2d>& image_2_points);
+
 }  // namespace theia
 
 #endif  // THEIA_SFM_POSE_EIGHT_POINT_FUNDAMENTAL_MATRIX_H_

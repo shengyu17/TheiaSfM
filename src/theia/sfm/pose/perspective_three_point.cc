@@ -37,6 +37,7 @@
 #include <glog/logging.h>
 #include <math.h>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <complex>
 #include <algorithm>
 
@@ -180,6 +181,50 @@ void Backsubstitute(const Matrix3d& intermediate_world_frame,
 }
 
 }  // namespace
+
+std::vector<Eigen::Matrix<double,7,1>> PoseFromThreePointsPY(const std::vector<Vector2d>& feature_points,
+                           const std::vector<Vector3d>& points3d) {
+    const Vector2d feature_point[3] = {feature_points[0],feature_points[1],feature_points[2]};
+    const Vector3d points_3d[3] = {points3d[0],points3d[1],points3d[2]};
+
+    std::vector<Matrix3d> solution_rotations;
+    std::vector<Vector3d> solution_translations;
+    const bool success = PoseFromThreePoints(feature_point, points_3d, &solution_rotations, &solution_translations);
+
+    std::vector<Eigen::Matrix<double,7,1>> solutions;
+    for (int i=0; i < solution_rotations.size(); ++i) {
+        Eigen::Matrix<double,7,1> tmp;
+        Eigen::Quaterniond q(solution_rotations[i]);
+        tmp(0,0) = q.w();
+        tmp(1,0) = q.x();
+        tmp(2,0) = q.y();
+        tmp(3,0) = q.z();
+        tmp(4,0) = solution_translations[i][0];
+        tmp(5,0) = solution_translations[i][1];
+        tmp(6,0) = solution_translations[i][2];
+        solutions.push_back(tmp);
+    }
+
+    //py::list retn;
+    //retn.append(success);
+    //retn.append(py_array_from_vector(*solution_rotations));
+    //retn.append(py_array_from_vector(*solution_translations));
+    //py_array_from_
+    //return std::move(retn);
+    return solutions;
+
+}
+
+std::tuple<bool, std::vector<Matrix3d>, std::vector<Vector3d>> PoseFromThreePointsWrapper(const std::vector<Vector2d>& feature_points_in,
+                           const std::vector<Vector3d>& points_3d_in){
+    const Vector2d feature_point[3] = {feature_points_in[0],feature_points_in[1],feature_points_in[2]};
+    const Vector3d points_3d[3] = {points_3d_in[0],points_3d_in[1],points_3d_in[2]};
+
+    std::vector<Matrix3d> solution_rotations;
+    std::vector<Vector3d> solution_translations;
+    const bool success = PoseFromThreePoints(feature_point, points_3d, &solution_rotations, &solution_translations);
+    return std::make_tuple(success, solution_rotations, solution_translations);
+}
 
 bool PoseFromThreePoints(const Vector2d feature_point[3],
                          const Vector3d points_3d[3],

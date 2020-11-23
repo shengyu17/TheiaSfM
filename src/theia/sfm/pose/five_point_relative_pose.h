@@ -42,6 +42,9 @@
 
 namespace theia {
 
+std::tuple<bool, std::vector<Eigen::Matrix3d>> FivePointRelativePoseWrapper(const std::vector<Eigen::Vector2d>& image1_points,
+                           const std::vector<Eigen::Vector2d>& image2_points);
+
 // Computes the relative pose between two cameras using 5 corresponding
 // points. Algorithm is implemented based on "H. Stewénius, C. Engels, and
 // D. Nistér. Recent developments on direct relative orientation". ISPRS Journal
@@ -60,6 +63,8 @@ namespace theia {
 bool FivePointRelativePose(const std::vector<Eigen::Vector2d>& image1_points,
                            const std::vector<Eigen::Vector2d>& image2_points,
                            std::vector<Eigen::Matrix3d>* essential_matrices);
+
+
 }  // namespace theia
 
 #endif  // THEIA_SFM_POSE_FIVE_POINT_RELATIVE_POSE_H_

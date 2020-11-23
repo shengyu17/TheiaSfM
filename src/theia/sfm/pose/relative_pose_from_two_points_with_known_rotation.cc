@@ -41,6 +41,16 @@
 
 namespace theia {
 
+std::tuple<bool, Eigen::Vector3d> RelativePoseFromTwoPointsWithKnownRotationWrapper(
+    const std::vector<Eigen::Vector2d> rotated_features1_in,
+    const std::vector<Eigen::Vector2d> rotated_features2_in){
+    Eigen::Vector3d relative_position2;
+    Eigen::Vector2d rotated_features1[2] = {rotated_features1_in[0], rotated_features1_in[1]};
+    Eigen::Vector2d rotated_features2[2] = {rotated_features2_in[0], rotated_features2_in[1]};
+    const bool success = RelativePoseFromTwoPointsWithKnownRotation(rotated_features1, rotated_features2, &relative_position2);
+    return std::make_tuple(success, relative_position2);
+}
+
 // We use the epipolar constraint to solve for the unknown relative position:
 //
 //   p1^t * [t]_x * p2 = 0

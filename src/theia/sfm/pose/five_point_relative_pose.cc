@@ -207,6 +207,16 @@ Matrix<double, 10, 20> BuildConstraintMatrix(
 
 }  // namespace
 
+std::tuple<bool, std::vector<Matrix3d>> FivePointRelativePoseWrapper(const std::vector<Vector2d>& image1_points,
+                           const std::vector<Vector2d>& image2_points){
+    std::vector<Matrix3d> essential_matrices;
+    const bool success = FivePointRelativePose(image1_points, image2_points, &essential_matrices);
+    return std::make_tuple(success, essential_matrices);
+
+}
+
+
+
 // Implementation of Nister from "An Efficient Solution to the Five-Point
 // Relative Pose Problem"
 bool FivePointRelativePose(const std::vector<Vector2d>& image1_points,

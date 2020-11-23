@@ -225,6 +225,7 @@ set(THEIA_LIBRARY_DEPENDENCIES
   stlplus3
   vlfeat
   visual_sfm
+
 )
 
 set(THEIA_LIBRARY_SOURCE
@@ -371,3 +372,32 @@ if (BUILD_TESTING)
   gtest(util/mutable_priority_queue)
   gtest(util/lru_cache)
 endif (BUILD_TESTING)
+
+message("showing test property")
+get_property(test_prop TEST distance_test PROPERTY WORKING_DIRECTORY)
+message(STATUS ${test_prop})
+message("showing test property")
+
+#Add python binding
+
+pybind11_add_module(pytheia python/pybind.cc)
+target_link_libraries(pytheia theia ${THEIA_LIBRARY_DEPENDENCIES} pybind11_headers)
+
+#set_target_properties(pytheia PROPERTIES
+#    LIBRARY_OUTPUT_DIRECTORY "${theia_SOURCE_DIR}/.."
+#)
+
+#install(TARGETS pytheia
+#  EXPORT  TheiaExport
+#  RUNTIME DESTINATION bin
+#  LIBRARY DESTINATION lib${LIB_SUFFIX}
+#  ARCHIVE DESTINATION lib${LIB_SUFFIX})
+
+
+add_subdirectory(image)
+add_subdirectory(io)
+add_subdirectory(matching)
+add_subdirectory(math)
+add_subdirectory(sfm)
+add_subdirectory(solvers)
+add_subdirectory(util)

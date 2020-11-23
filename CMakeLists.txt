@@ -46,6 +46,16 @@ endif()
 project(THEIA C CXX)
 include_directories(${PROJECT_SOURCE_DIR})
 
+message("show cmake souce directory include directory property")
+message(STATUS "Current cmake cource directory is:'${CMAKE_CURRENT_SOURCE_DIR}'")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+    message(STATUS "dir='${dir}'")
+endforeach()
+
+# fPIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Set up the git hook to make Gerrit Change-Id: lines in commit messages.
 set (LOCAL_GIT_DIRECTORY)
 if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
@@ -79,6 +89,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 option(BUILD_TESTING "Enable testing" ON)
 option(BUILD_DOCUMENTATION "Build html User's Guide" OFF)
+message("showing cache property")
+get_property(str CACHE BUILD_TESTING PROPERTY TYPE)
+message(${str})
 
 enable_testing()
 if (NOT MSVC)
@@ -102,6 +115,14 @@ set(THEIA_ABI_VERSION 0.7.0)
 
 # THEIA data directory
 add_definitions(-DTHEIA_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
+#option(PYTHON_EXECUTABLE "Python path" "/home/shengyu/anaconda3/envs/theia_binding/bin/python")
+set(PYTHON_EXECUTABLE /home/shengyu/anaconda3/envs/theia_binding/bin/python CACHE FILEPATH
+    "Using the anaconda interpreter from the environment theia_binding"
+    FORCE)
+set(PYTHON_LIBRARY /home/shengyu/anaconda3/envs/theia_binding/lib/libpython3.8.so CACHE FILEPATH
+    "Path to a library"
+    FORCE)
+
 
 # Eigen
 set(MIN_EIGEN_VERSION 3.2.0)
@@ -222,7 +243,10 @@ include_directories(
   ${OPENIMAGEIO_INCLUDE_DIRS}
   ${RAPIDJSON_INCLUDE_DIRS}
   ${ROCKSDB_INCLUDE_DIR}
+  ${PYTHON_INCLUDE_DIRS}
 )
+message("python directory:")
+message(${PYTHON_INCLUDE_DIRS})
 
 # NOTE: This fix came from Ceres solver with the following comment:
 #
@@ -256,6 +280,13 @@ include_directories(
   ${stlplus3_SOURCE_DIR}
   ${vlfeat_SOURCE_DIR}
   ${visual_sfm_SOURCE_DIR})
+
+message("show cmake souce directory include directory property")
+message(STATUS "Current cmake cource directory is:'${CMAKE_CURRENT_SOURCE_DIR}'")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+    message(STATUS "dir='${dir}'")
+endforeach()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(OptimizeTheiaCompilerFlags)
@@ -313,6 +344,8 @@ endif ()
 # as a normal library target created via a normal ADD_LIBRARY().
 install(EXPORT TheiaExport
         DESTINATION ${RELATIVE_CMAKECONFIG_INSTALL_DIR} FILE TheiaTargets.cmake)
+ message("path of theRELATIVE_CMAKECONFIG_INSTALL_DIR:" )
+    message(STATUS ${RELATIVE_CMAKECONFIG_INSTALL_DIR} )
 
 # Figure out the relative path from the installed Config.cmake file to the
 # install prefix (which may be at runtime different from the chosen
@@ -320,6 +353,12 @@ install(EXPORT TheiaExport
 # This relative path will be configured into the TheiaConfig.cmake.
 file(RELATIVE_PATH INSTALL_ROOT_REL_CONFIG_INSTALL_DIR
      ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX})
+
+ message("The relative path is:")
+ message(${INSTALL_ROOT_REL_CONFIG_INSTALL_DIR})
+ message(${CMAKE_INSTALL_PREFIX})
+ message(${CMAKECONFIG_INSTALL_DIR})
+ message(${CMAKE_INSTALL_PREFIX})
 
 # Create a TheiaConfig.cmake file. <name>Config.cmake files are searched by
 # FIND_PACKAGE() automatically. We configure that file so that we can put any
@@ -345,3 +384,10 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfig.cmake"
 	            "${CMAKE_SOURCE_DIR}/cmake/FindOpenImageIO.cmake"
               "${CMAKE_SOURCE_DIR}/cmake/FindRocksDB.cmake"
               DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+
+message("show cmake souce directory include directory property")
+message(STATUS "Current cmake cource directory is:'${CMAKE_CURRENT_SOURCE_DIR}'")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()

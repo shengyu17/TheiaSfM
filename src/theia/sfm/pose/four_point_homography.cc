@@ -65,6 +65,15 @@ inline Matrix<double, 2, 9> CreateActionConstraint(const Vector2d& img1_point,
 
 }  // namespace
 
+std::tuple<bool, Matrix3d> FourPointHomographyWrapper(const std::vector<Vector2d>& image_1_points,
+                                                      const std::vector<Vector2d>& image_2_points){
+    Matrix3d homography;
+    const bool success = FourPointHomography(image_1_points, image_2_points, &homography);
+    return std::make_tuple(success, homography);
+
+}
+
+
 // Normalized DLT method to compute the homography H that maps image points in
 // image_1 to image_2 via x' = Hx (where x is in image 1 and x' is in image
 // 2). The DLT algorithm implemented is from Algorithm 4.2 in Hartley and

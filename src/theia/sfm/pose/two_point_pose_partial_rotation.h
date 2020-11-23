@@ -38,8 +38,17 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <vector>
 
 namespace theia {
+
+std::tuple<int, std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> TwoPointPosePartialRotationWrapper(const Eigen::Vector3d& axis,
+                                const Eigen::Vector3d& model_point_1,
+                                const Eigen::Vector3d& model_point_2,
+                                const Eigen::Vector3d& image_ray_1,
+                                const Eigen::Vector3d& image_ray_2);
+
+
 // Solves for the limited pose of a camera from two 3D points to image ray
 // correspondences. The pose is limited in that while it solves for the three
 // translation components, it only solves for a single rotation around a passed

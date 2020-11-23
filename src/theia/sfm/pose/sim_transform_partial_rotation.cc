@@ -136,6 +136,27 @@ bool SolveQEP(const Matrix5d& M, const Matrix5d& C, const Matrix5d& K,
 
 }  // namespace
 
+
+std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>, std::vector<double>> SimTransformPartialRotationWrapper(
+    const Eigen::Vector3d& rotation_axis,
+    const std::vector<Eigen::Vector3d> image_one_ray_directions_in,
+    const std::vector<Eigen::Vector3d> image_one_ray_origins_in,
+    const std::vector<Eigen::Vector3d> image_two_ray_directions_in,
+    const std::vector<Eigen::Vector3d> image_two_ray_origins_in){
+
+    Eigen::Vector3d image_one_ray_directions[5] = {image_one_ray_directions_in[0], image_one_ray_directions_in[1], image_one_ray_directions_in[2], image_one_ray_directions_in[3], image_one_ray_directions_in[4]};
+    Eigen::Vector3d image_one_ray_origins[5] = {image_one_ray_origins_in[0], image_one_ray_origins_in[1], image_one_ray_origins_in[2], image_one_ray_origins_in[3], image_one_ray_origins_in[4]};
+    Eigen::Vector3d image_two_ray_directions[5] = {image_two_ray_directions_in[0], image_two_ray_directions_in[1], image_two_ray_directions_in[2], image_two_ray_directions_in[3], image_two_ray_directions_in[4]};
+    Eigen::Vector3d image_two_ray_origins[5] = {image_two_ray_origins_in[0], image_two_ray_origins_in[1], image_two_ray_origins_in[2], image_two_ray_origins_in[3], image_two_ray_origins_in[4]};
+    std::vector<Eigen::Quaterniond> soln_rotations;
+    std::vector<Eigen::Vector3d> soln_translations;
+    std::vector<double> soln_scales;
+    SimTransformPartialRotation(rotation_axis, image_one_ray_directions, image_one_ray_origins, image_two_ray_directions, image_two_ray_origins, &soln_rotations, &soln_translations, &soln_scales);
+    return std::make_tuple(soln_rotations, soln_translations, soln_scales);
+
+}
+
+
 void SimTransformPartialRotation(const Vector3d& axis,
                                  const Vector3d image_one_ray_directions[5],
                                  const Vector3d image_one_ray_origins[5],

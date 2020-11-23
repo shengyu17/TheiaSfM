@@ -42,13 +42,13 @@
 #include "theia/io/write_calibration.h"
 #include "theia/util/map_util.h"
 
-DEFINE_string(json_file, "io/write_calibration_test.json",
-              "JSON writing testing file.");
+//DEFINE_string(json_file, "io/write_calibration_test.json",
+//              "JSON writing testing file.");
 
 namespace theia {
 namespace {
 
-std::string json_filepath = THEIA_DATA_DIR + std::string("/") + FLAGS_json_file;
+std::string json_filepath = THEIA_DATA_DIR + std::string("/");// + FLAGS_json_file;
 
 static const char* kCameraIntrinsicsPriorsJson =
     "{\"priors\" : ["

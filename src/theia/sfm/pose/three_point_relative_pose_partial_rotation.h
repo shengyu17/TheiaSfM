@@ -43,6 +43,13 @@
 #include "theia/alignment/alignment.h"
 
 namespace theia {
+
+std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> ThreePointRelativePosePartialRotationWrapper(
+    const Eigen::Vector3d& rotation_axis,
+    const std::vector<Eigen::Vector3d> image_1_rays_in,
+    const std::vector<Eigen::Vector3d> image_2_rays_in);
+
+
 // Solves for the limited transformation between correspondences from two
 // images. The transformation is limited in that it only solves for a single
 // rotation around a known axis. Additionally the translation is only solved up

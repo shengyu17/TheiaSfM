@@ -42,6 +42,13 @@
 
 namespace theia {
 
+std::tuple<bool, std::vector<Eigen::Matrix<double, 3, 4> >, std::vector<std::vector<double> >> FivePointFocalLengthRadialDistortionWrapper(
+    const std::vector<Eigen::Vector2d>& feature_positions,
+    const std::vector<Eigen::Vector3d>& world_points,
+    const int num_radial_distortion_params,
+    std::vector<Eigen::Matrix<double, 3, 4> >* projection_matrices,
+    std::vector<std::vector<double> >* radial_distortions);
+
 // Description: Compute the absolute pose, focal length, and radial distortion
 // of a camera using five 3D-to-2D correspondences from the ICCV paper: "Real
 // time solution to the absolute pose problem with unknown radial distortion and

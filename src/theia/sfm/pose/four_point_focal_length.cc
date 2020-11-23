@@ -46,6 +46,7 @@ namespace theia {
 using Eigen::Matrix;
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
+using Eigen::Vector2d;
 
 namespace {
 void GetRigidTransform(const Matrix<double, 3, 4>& points1,
@@ -88,6 +89,14 @@ void GetRigidTransform(const Matrix<double, 3, 4>& points1,
 }
 
 }  // namespace
+
+std::tuple<int, std::vector<Matrix<double, 3, 4>>> FourPointPoseAndFocalLengthWrapper(const std::vector<Vector2d>& feature_vectors,
+                                                                                      const std::vector<Vector3d>& world_points){
+    std::vector<Matrix<double, 3, 4>> projection_matrices;
+    int focal_length = FourPointPoseAndFocalLength(feature_vectors, world_points, &projection_matrices);
+    return std::make_tuple(focal_length, projection_matrices);
+}
+
 
 int FourPointPoseAndFocalLength(
     const std::vector<Eigen::Vector2d>& feature_vectors,

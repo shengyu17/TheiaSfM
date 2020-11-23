@@ -141,6 +141,20 @@ bool SolveQEP(const Matrix3d& M, const Matrix3d& C, const Matrix3d& K,
 
 }  // namespace
 
+std::tuple<std::vector<Quaterniond>, std::vector<Vector3d>> ThreePointRelativePosePartialRotationWrapper(
+    const Vector3d& rotation_axis,
+    const std::vector<Vector3d> image_1_rays_in,
+    const std::vector<Vector3d> image_2_rays_in){
+    std::vector<Quaterniond> soln_rotations;
+    std::vector<Vector3d> soln_translations;
+    Vector3d image_1_rays[3] = {image_1_rays_in[0], image_1_rays_in[1], image_1_rays_in[2]};
+    Vector3d image_2_rays[3] = {image_2_rays_in[0], image_2_rays_in[1], image_2_rays_in[2]};
+    ThreePointRelativePosePartialRotation(rotation_axis, image_1_rays, image_2_rays, &soln_rotations, &soln_translations);
+    return std::make_tuple(soln_rotations, soln_translations);
+}
+
+
+
 void ThreePointRelativePosePartialRotation(
     const Vector3d& axis,
     const Vector3d image_1_rays[3],
