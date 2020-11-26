@@ -35,7 +35,12 @@
 #ifndef THEIA_SFM_POSE_FUNDAMENTAL_MATRIX_UTIL_H_
 #define THEIA_SFM_POSE_FUNDAMENTAL_MATRIX_UTIL_H_
 
+#include<Eigen/Core>
+#include<Eigen/Geometry>
+
 namespace theia {
+
+std::tuple<bool, double, double> FocalLengthsFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix);
 
 // Given a fundmental matrix, decompose the fundmental matrix and recover focal
 // lengths f1, f2 >0. This assumes a principal point of (0, 0) for both cameras.
@@ -45,6 +50,9 @@ bool FocalLengthsFromFundamentalMatrix(const double fmatrix[3 * 3],
                                        double* focal_length1,
                                        double* focal_length2);
 
+
+std::tuple<bool, double> SharedFocalLengthsFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix);
+
 // Given a fundamental matrix that relates two cameras with the same intrinsics,
 // extract the shared focal length. This assumes that the fundamental matrix was
 // computed with the effect of all non-focal length intrinsics (e.g., principal
@@ -52,6 +60,8 @@ bool FocalLengthsFromFundamentalMatrix(const double fmatrix[3 * 3],
 bool SharedFocalLengthsFromFundamentalMatrix(const double fmatrix[3 * 3],
                                              double* focal_length);
 
+
+std::tuple<Eigen::Matrix<double, 3, 4>, Eigen::Matrix<double, 3, 4>> ProjectionMatricesFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix);
 // Computes the projection matrices corresponding to the fundamental matrix such
 // that if y^t * F * x = 0, pmatrix1 corresponds to the camera observing y and
 // pmatrix2 corresponds to the camera observing x.
@@ -59,6 +69,8 @@ void ProjectionMatricesFromFundamentalMatrix(const double fmatrix[3 * 3],
                                              double pmatrix1[3 * 4],
                                              double pmatrix2[3 * 4]);
 
+Eigen::Matrix3d FundamentalMatrixFromProjectionMatricesWrapper(const Eigen::Matrix<double, 3, 4> pmatrix1,
+                                             const Eigen::Matrix<double, 3, 4> pmatrix2);
 // Constructs projection matrices from the input fundamental matrix. The
 // fundamental matrix is such that point1^t * fmatrix * point2 = 0 for point1 in
 // the image corresponding to pmatrix1 and point2 in the image corresponding to
@@ -67,6 +79,9 @@ void FundamentalMatrixFromProjectionMatrices(const double pmatrix1[3 * 4],
                                              const double pmatrix2[3 * 4],
                                              double fmatrix[3 * 3]);
 
+Eigen::Matrix3d EssentialMatrixFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix,
+                                          const double focal_length1,
+                                          const double focal_length2);
 // Extracts the essential matrix such that diag([f2 f2 1]) F diag[f1 f1 1]) is a
 // valid essential matrix.
 void EssentialMatrixFromFundamentalMatrix(const double fmatrix[3 * 3],
@@ -74,6 +89,10 @@ void EssentialMatrixFromFundamentalMatrix(const double fmatrix[3 * 3],
                                           const double focal_length2,
                                           double ematrix[3 * 3]);
 
+Eigen::Matrix3d ComposeFundamentalMatrixWrapper(const double focal_length1,
+                              const double focal_length2,
+                              const Eigen::Matrix3d rotation,
+                              const Eigen::Vector3d translation);
 // Composes a fundamental matrix such that:
 //    F = K_2^-1 * [t]_x * R * K_2^-1
 // where K_i is the calibration matrix for image i. The fundamental matrix F is

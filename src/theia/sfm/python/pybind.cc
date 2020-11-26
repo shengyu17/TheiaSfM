@@ -30,9 +30,25 @@
 #include "theia/sfm/pose/relative_pose_from_two_points_with_known_rotation.h"
 #include "theia/sfm/pose/seven_point_fundamental_matrix.h"
 #include "theia/sfm/pose/sim_transform_partial_rotation.h"
+#include "theia/sfm/pose/essential_matrix_utils.h"
+#include "theia/matching/feature_correspondence.h"
+#include "theia/sfm/pose/fundamental_matrix_util.h"
 
+namespace py = pybind11;
+
+#include <vector>
+#include <iostream>
+#include <pybind11/numpy.h>
 
 PYBIND11_MODULE(pytheia_sfm, m) {
+
+  py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
+    .def(py::init())
+    .def(py::init<Eigen::Vector2d, Eigen::Vector2d>())
+    .def_readwrite("feature1", &theia::FeatureCorrespondence::feature1)
+    .def_readwrite("feature2", &theia::FeatureCorrespondence::feature2)
+  ;
+
 
   //pose
   m.def("PoseFromThreePoints", theia::PoseFromThreePointsWrapper);
@@ -50,6 +66,18 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("RelativePoseFromTwoPointsWithKnownRotation", theia::RelativePoseFromTwoPointsWithKnownRotationWrapper);
   m.def("SevenPointFundamentalMatrix", theia::SevenPointFundamentalMatrixWrapper);
   m.def("SimTransformPartialRotation", theia::SimTransformPartialRotationWrapper);
+  m.def("DecomposeEssentialMatrix", theia::DecomposeEssentialMatrixWrapper);
+  m.def("EssentialMatrixFromTwoProjectionMatrices", theia::EssentialMatrixFromTwoProjectionMatricesWrapper);
+  m.def("GetBestPoseFromEssentialMatrix", theia::GetBestPoseFromEssentialMatrixWrapper);
+  m.def("FocalLengthsFromFundamentalMatrix", theia::FocalLengthsFromFundamentalMatrixWrapper);
+  m.def("SharedFocalLengthsFromFundamentalMatrix", theia::SharedFocalLengthsFromFundamentalMatrixWrapper);
+  m.def("ProjectionMatricesFromFundamentalMatrix", theia::ProjectionMatricesFromFundamentalMatrixWrapper);
+  m.def("FundamentalMatrixFromProjectionMatrices", theia::FundamentalMatrixFromProjectionMatricesWrapper);
+  m.def("EssentialMatrixFromFundamentalMatrix", theia::EssentialMatrixFromFundamentalMatrixWrapper);
+  m.def("ComposeFundamentalMatrix", theia::ComposeFundamentalMatrixWrapper);
+
+
+
 
   //triangulation
   m.def("Triangulate", theia::TriangulateWrapper);

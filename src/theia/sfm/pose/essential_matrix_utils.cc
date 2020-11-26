@@ -50,6 +50,15 @@ namespace theia {
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
 
+std::tuple<Matrix3d, Matrix3d, Vector3d> DecomposeEssentialMatrixWrapper(const Eigen::Matrix3d& essential_matrix){
+    Matrix3d rotation1;
+    Matrix3d rotation2;
+    Vector3d translation;
+    DecomposeEssentialMatrix(essential_matrix, &rotation1, &rotation2, &translation);
+    return std::make_tuple(rotation1, rotation2, translation);
+}
+
+
 // Decomposes the essential matrix into the rotation R and translation t such
 // that E can be any of the four candidate solutions: [rotation1 | translation],
 // [rotation1 | -translation], [rotation2 | translation], [rotation2 |
@@ -79,6 +88,13 @@ void DecomposeEssentialMatrix(const Matrix3d& essential_matrix,
   *translation = U.col(2).normalized();
 }
 
+Eigen::Matrix3d EssentialMatrixFromTwoProjectionMatricesWrapper(const Matrix3x4d& pose1,
+                                                                const Matrix3x4d& pose2){
+    Eigen::Matrix3d essential_matrix;
+    EssentialMatrixFromTwoProjectionMatrices(pose1, pose2, &essential_matrix);
+    return essential_matrix;
+}
+
 // x = (R2 * X + t2)
 // x = (R2 * R1^t * X + t2)
 // x = (R2 * (R1^t * X - t1) + t2)
@@ -103,6 +119,15 @@ void EssentialMatrixFromTwoProjectionMatrices(
   const Eigen::Matrix3d relative_rotation = R1 * R2.transpose();
   const Eigen::Vector3d translation = (t1 - relative_rotation * t2).normalized();
   *essential_matrix = CrossProductMatrix(translation) * relative_rotation;
+}
+
+std::tuple<int, Matrix3d, Vector3d> GetBestPoseFromEssentialMatrixWrapper(
+    const Eigen::Matrix3d& essential_matrix,
+    const std::vector<FeatureCorrespondence>& normalized_correspondences){
+    Matrix3d rotation;
+    Vector3d position;
+    const int num_solutions = GetBestPoseFromEssentialMatrix(essential_matrix, normalized_correspondences, &rotation, &position);
+    return std::make_tuple(num_solutions, rotation, position);
 }
 
 int GetBestPoseFromEssentialMatrix(

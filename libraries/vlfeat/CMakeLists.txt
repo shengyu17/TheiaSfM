@@ -31,3 +31,10 @@ install(TARGETS vlfeat
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIB_SUFFIX}
   ARCHIVE DESTINATION lib${LIB_SUFFIX})
+
+message("show cmake souce directory include directory property")
+message(STATUS "Current cmake cource directory is:'${CMAKE_CURRENT_SOURCE_DIR}'")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+    message(STATUS "dir='${dir}'")
+endforeach()

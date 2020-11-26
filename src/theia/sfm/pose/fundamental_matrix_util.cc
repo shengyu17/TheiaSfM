@@ -50,6 +50,14 @@ using Eigen::Matrix;
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
 
+std::tuple<bool, double, double> FocalLengthsFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix){
+    double focal_length1;
+    double focal_length2;
+    const bool success = FocalLengthsFromFundamentalMatrix(fmatrix.data(), &focal_length1, &focal_length2);
+    return std::make_tuple(success, focal_length1, focal_length2);
+}
+
+
 // Given a fundmental matrix, decompose the fundmental matrix and recover focal
 // lengths f1, f2 >0 such that diag([f2 f2 1]) F diag[f1 f1 1]) is a valid
 // essential matrix. This assumes a principal point of (0, 0) for both cameras.
@@ -132,6 +140,12 @@ bool FocalLengthsFromFundamentalMatrix(const double fmatrix[3 * 3],
   return true;
 }
 
+std::tuple<bool, double> SharedFocalLengthsFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix){
+    double focal_length;
+    const bool success = SharedFocalLengthsFromFundamentalMatrix(fmatrix.data(), &focal_length);
+    return std::make_tuple(success, focal_length);
+}
+
 // Given a fundamental matrix that relates two cameras with the same intrinsics,
 // extract the shared focal length. The method is provided in the article:
 //   "On Focal Length Calibration from Two Views" by Peter Sturm (CVPR 2001).
@@ -202,6 +216,13 @@ bool SharedFocalLengthsFromFundamentalMatrix(const double fmatrix[3 * 3],
   return true;
 }
 
+std::tuple<Eigen::Matrix<double, 3, 4>, Eigen::Matrix<double, 3, 4>> ProjectionMatricesFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix){
+    Eigen::Matrix<double, 3, 4> pmatrix1;
+    Eigen::Matrix<double, 3, 4> pmatrix2;
+    ProjectionMatricesFromFundamentalMatrix(fmatrix.data(), pmatrix1.data(), pmatrix2.data());
+    return std::make_tuple(pmatrix1, pmatrix2);
+}
+
 void ProjectionMatricesFromFundamentalMatrix(const double fmatrix[3 * 3],
                                              double pmatrix1[3 * 4],
                                              double pmatrix2[3 * 4]) {
@@ -216,6 +237,14 @@ void ProjectionMatricesFromFundamentalMatrix(const double fmatrix[3 * 3],
       CrossProductMatrix(right_epipole) * fmatrix_map.transpose();
   Map<Vector3d>(pmatrix2 + 9, 3) = right_epipole;
 }
+
+Eigen::Matrix3d FundamentalMatrixFromProjectionMatricesWrapper(const Eigen::Matrix<double, 3, 4> pmatrix1,
+                                                                           const Eigen::Matrix<double, 3, 4> pmatrix2){
+    Eigen::Matrix3d fmatrix;
+    FundamentalMatrixFromProjectionMatrices(pmatrix1.data(), pmatrix2.data(), fmatrix.data());
+    return fmatrix;
+}
+
 
 // Ported from Hartley and Zisserman:
 // http://www.robots.ox.ac.uk/~vgg/hzbook/code/vgg_multiview/vgg_F_from_P.m
@@ -240,6 +269,14 @@ void FundamentalMatrixFromProjectionMatrices(const double pmatrix1[3 * 4],
   }
 }
 
+Eigen::Matrix3d EssentialMatrixFromFundamentalMatrixWrapper(const Eigen::Matrix3d fmatrix,
+                                          const double focal_length1,
+                                          const double focal_length2){
+    Eigen::Matrix3d ematrix;
+    EssentialMatrixFromFundamentalMatrix(fmatrix.data(), focal_length1, focal_length2, ematrix.data());
+    return ematrix;
+}
+
 void EssentialMatrixFromFundamentalMatrix(const double fmatrix[3 * 3],
                                           const double focal_length1,
                                           const double focal_length2,
@@ -250,6 +287,15 @@ void EssentialMatrixFromFundamentalMatrix(const double fmatrix[3 * 3],
       Eigen::DiagonalMatrix<double, 3>(focal_length2, focal_length2, 1.0) *
       fundamental_matrix *
       Eigen::DiagonalMatrix<double, 3>(focal_length1, focal_length1, 1.0);
+}
+
+Eigen::Matrix3d ComposeFundamentalMatrixWrapper(const double focal_length1,
+                              const double focal_length2,
+                              const Eigen::Matrix3d rotation,
+                              const Eigen::Vector3d translation){
+    Eigen::Matrix3d fmatrix;
+    ComposeFundamentalMatrix(focal_length1, focal_length2, rotation.data(), translation.data(), fmatrix.data());
+    return fmatrix;
 }
 
 void ComposeFundamentalMatrix(const double focal_length1,

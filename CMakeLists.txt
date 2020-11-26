@@ -57,30 +57,30 @@ endforeach()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Set up the git hook to make Gerrit Change-Id: lines in commit messages.
-set (LOCAL_GIT_DIRECTORY)
-if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
-  # .git directory can be found on Unix based system, or on Windows with
-  # Git Bash (shipped with msysgit)
-  set (LOCAL_GIT_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-else (EXISTS ${CMAKE_SOURCE_DIR}/.git)
-endif (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+#set (LOCAL_GIT_DIRECTORY)
+#if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+#  # .git directory can be found on Unix based system, or on Windows with
+#  # Git Bash (shipped with msysgit)
+#  set (LOCAL_GIT_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+#else (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+#endif (EXISTS ${CMAKE_SOURCE_DIR}/.git)
 
-if (EXISTS ${LOCAL_GIT_DIRECTORY})
-  if (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
-    # Download the hook only if it is not already present. We borrow the hook
-    # hosted by Ceres because it is not specific to the project.
-    file(DOWNLOAD http://www.theia-sfm.org/_static/commit-msg
-         ${CMAKE_BINARY_DIR}/commit-msg)
-
-    # Make the downloaded file executable, since it is not by default.
-    file(COPY ${CMAKE_BINARY_DIR}/commit-msg
-         DESTINATION ${LOCAL_GIT_DIRECTORY}/hooks/
-         FILE_PERMISSIONS
-           OWNER_READ OWNER_WRITE OWNER_EXECUTE
-           GROUP_READ GROUP_WRITE GROUP_EXECUTE
-           WORLD_READ WORLD_EXECUTE)
-  endif (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
-endif (EXISTS ${LOCAL_GIT_DIRECTORY})
+#if (EXISTS ${LOCAL_GIT_DIRECTORY})
+#  if (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
+#    # Download the hook only if it is not already present. We borrow the hook
+#    # hosted by Ceres because it is not specific to the project.
+#    file(DOWNLOAD http://www.theia-sfm.org/_static/commit-msg
+#         ${CMAKE_BINARY_DIR}/commit-msg)
+#
+#    # Make the downloaded file executable, since it is not by default.
+#    file(COPY ${CMAKE_BINARY_DIR}/commit-msg
+#         DESTINATION ${LOCAL_GIT_DIRECTORY}/hooks/
+#         FILE_PERMISSIONS
+#           OWNER_READ OWNER_WRITE OWNER_EXECUTE
+#           GROUP_READ GROUP_WRITE GROUP_EXECUTE
+#           WORLD_READ WORLD_EXECUTE)
+#  endif (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
+#endif (EXISTS ${LOCAL_GIT_DIRECTORY})
 
 # ==============================================================================
 # Additional cmake find modules
@@ -245,8 +245,7 @@ include_directories(
   ${ROCKSDB_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
 )
-message("python directory:")
-message(${PYTHON_INCLUDE_DIRS})
+
 
 # NOTE: This fix came from Ceres solver with the following comment:
 #

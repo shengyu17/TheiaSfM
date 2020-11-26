@@ -37,7 +37,7 @@
 
 #include <Eigen/Core>
 #include <vector>
-#include "theia/util/python_types.h"
+
 
 namespace theia {
 // Computes camera pose using the three point algorithm and returns all possible
