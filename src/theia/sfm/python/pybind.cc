@@ -34,6 +34,13 @@
 #include "theia/matching/feature_correspondence.h"
 #include "theia/sfm/pose/fundamental_matrix_util.h"
 
+#include "theia/sfm/transformation/transformation_wrapper.h"
+#include "theia/sfm/transformation/align_point_clouds.h"
+#include "theia/sfm/transformation/gdls_similarity_transform.h"
+
+#include "theia/sfm/camera/camera.h"
+#include "theia/sfm/camera/camera_wrapper.h"
+
 namespace py = pybind11;
 
 #include <vector>
@@ -41,12 +48,65 @@ namespace py = pybind11;
 #include <pybind11/numpy.h>
 
 PYBIND11_MODULE(pytheia_sfm, m) {
-
+  //matching
   py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
     .def(py::init())
     .def(py::init<Eigen::Vector2d, Eigen::Vector2d>())
     .def_readwrite("feature1", &theia::FeatureCorrespondence::feature1)
     .def_readwrite("feature2", &theia::FeatureCorrespondence::feature2)
+  ;
+
+  //camera
+  m.def("ComposeProjectionMatrix", theia::ComposeProjectionMatrixWrapper);
+  m.def("DecomposeProjectionMatrix", theia::DecomposeProjectionMatrixWrapper);
+  m.def("CalibrationMatrixToIntrinsics", theia::CalibrationMatrixToIntrinsicsWrapper);
+  m.def("IntrinsicsToCalibrationMatrix", theia::IntrinsicsToCalibrationMatrixWrapper);
+
+//  py::class_<theia::Prior>(m, "Prior")
+//    .def(py::init())
+//    .def(py::init<Eigen::Vector2d, Eigen::Vector2d>())
+//    .def_readwrite("is_set", &theia::Prior::is_set)
+//    .def_readwrite("value", &theia::Prior::value)
+//  ;
+
+  py::class_<theia::Camera>(m, "Camera")
+    .def(py::init())
+    .def(py::init<theia::Camera>())
+    .def("ImageWidth", &theia::Camera::ImageWidth)
+    .def("ImageHeight", &theia::Camera::ImageHeight)
+    //.def_readonly_static("kExtrinsicsSize", &theia::Camera::kExtrinsicsSize)
+  ;
+
+
+  // tested
+  py::enum_<theia::CameraIntrinsicsModelType>(m, "CameraIntrinsicsModelType")
+    .value("INVALID", theia::CameraIntrinsicsModelType::INVALID)
+    .value("PINHOLE", theia::CameraIntrinsicsModelType::PINHOLE)
+    .value("PINHOLE_RADIAL_TANGENTIAL", theia::CameraIntrinsicsModelType::PINHOLE_RADIAL_TANGENTIAL)
+    .value("FISHEYE", theia::CameraIntrinsicsModelType::FISHEYE)
+    .value("FOV", theia::CameraIntrinsicsModelType::FOV)
+    .value("DIVISION_UNDISTORTION", theia::CameraIntrinsicsModelType::DIVISION_UNDISTORTION)
+    .export_values()
+  ;
+
+  py::class_<theia::CameraIntrinsicsPrior>(m, "CameraIntrinsicsPrior")
+    .def(py::init())
+
+    .def_readwrite("image_width", &theia::CameraIntrinsicsPrior::image_width)
+    .def_readwrite("image_height", &theia::CameraIntrinsicsPrior::image_height)
+    .def_readwrite("camera_intrinsics_model_type", &theia::CameraIntrinsicsPrior::camera_intrinsics_model_type)
+    .def_readwrite("focal_length", &theia::CameraIntrinsicsPrior::focal_length)
+    .def_readwrite("principal_point", &theia::CameraIntrinsicsPrior::principal_point)
+    .def_readwrite("aspect_ratio", &theia::CameraIntrinsicsPrior::aspect_ratio)
+    .def_readwrite("skew", &theia::CameraIntrinsicsPrior::skew)
+    .def_readwrite("radial_distortion", &theia::CameraIntrinsicsPrior::radial_distortion)
+    .def_readwrite("tangential_distortion", &theia::CameraIntrinsicsPrior::tangential_distortion)
+    .def_readwrite("position", &theia::CameraIntrinsicsPrior::position)
+    .def_readwrite("orientation", &theia::CameraIntrinsicsPrior::orientation)
+    .def_readwrite("latitude", &theia::CameraIntrinsicsPrior::latitude)
+    .def_readwrite("longitude", &theia::CameraIntrinsicsPrior::longitude)
+    .def_readwrite("altitude", &theia::CameraIntrinsicsPrior::altitude)
+
   ;
 
 
@@ -76,6 +136,11 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("EssentialMatrixFromFundamentalMatrix", theia::EssentialMatrixFromFundamentalMatrixWrapper);
   m.def("ComposeFundamentalMatrix", theia::ComposeFundamentalMatrixWrapper);
 
+  //transformation
+  m.def("AlignPointCloudsUmeyama", theia::AlignPointCloudsUmeyamaWrapper);
+  m.def("AlignPointCloudsUmeyamaWithWeights", theia::AlignPointCloudsUmeyamaWithWeightsWrapper);
+  m.def("GdlsSimilarityTransform" ,theia::GdlsSimilarityTransformWrapper);
+
 
 
 
@@ -85,7 +150,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("TriangulateDLT", theia::TriangulateDLTWrapper);
   m.def("TriangulateNViewSVD", theia::TriangulateNViewSVDWrapper);
   m.def("TriangulateNView", theia::TriangulateNViewWrapper);
-  //m.def("IsTriangulatedPointInFrontOfCameras", theia::IsTriangulatedPointInFrontOfCameras);
+  m.def("IsTriangulatedPointInFrontOfCameras", theia::IsTriangulatedPointInFrontOfCameras);
   m.def("SufficientTriangulationAngle", theia::SufficientTriangulationAngle);
 
 

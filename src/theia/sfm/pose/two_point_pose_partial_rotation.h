@@ -42,7 +42,7 @@
 
 namespace theia {
 
-std::tuple<int, std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> TwoPointPosePartialRotationWrapper(const Eigen::Vector3d& axis,
+std::tuple<int, std::vector<Eigen::Matrix<double,4,1>>, std::vector<Eigen::Vector3d>> TwoPointPosePartialRotationWrapper(const Eigen::Vector3d& axis,
                                 const Eigen::Vector3d& model_point_1,
                                 const Eigen::Vector3d& model_point_2,
                                 const Eigen::Vector3d& image_ray_1,

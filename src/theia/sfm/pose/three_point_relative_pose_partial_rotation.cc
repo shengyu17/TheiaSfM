@@ -141,15 +141,27 @@ bool SolveQEP(const Matrix3d& M, const Matrix3d& C, const Matrix3d& K,
 
 }  // namespace
 
-std::tuple<std::vector<Quaterniond>, std::vector<Vector3d>> ThreePointRelativePosePartialRotationWrapper(
+std::tuple<std::vector<Eigen::Matrix<double,4,1>>, std::vector<Vector3d>> ThreePointRelativePosePartialRotationWrapper(
     const Vector3d& rotation_axis,
     const std::vector<Vector3d> image_1_rays_in,
     const std::vector<Vector3d> image_2_rays_in){
-    std::vector<Quaterniond> soln_rotations;
+    std::vector<Eigen::Quaterniond> soln_rotations_q;
     std::vector<Vector3d> soln_translations;
     Vector3d image_1_rays[3] = {image_1_rays_in[0], image_1_rays_in[1], image_1_rays_in[2]};
     Vector3d image_2_rays[3] = {image_2_rays_in[0], image_2_rays_in[1], image_2_rays_in[2]};
-    ThreePointRelativePosePartialRotation(rotation_axis, image_1_rays, image_2_rays, &soln_rotations, &soln_translations);
+    ThreePointRelativePosePartialRotation(rotation_axis, image_1_rays, image_2_rays, &soln_rotations_q, &soln_translations);
+
+
+    std::vector<Eigen::Matrix<double,4,1>> soln_rotations;
+    for (int i=0; i < soln_rotations_q.size(); ++i) {
+        Eigen::Matrix<double,4,1> tmp;
+        tmp(0,0) = soln_rotations_q[i].w();
+        tmp(1,0) = soln_rotations_q[i].x();
+        tmp(2,0) = soln_rotations_q[i].y();
+        tmp(3,0) = soln_rotations_q[i].z();
+        soln_rotations.push_back(tmp);
+    }
+
     return std::make_tuple(soln_rotations, soln_translations);
 }
 

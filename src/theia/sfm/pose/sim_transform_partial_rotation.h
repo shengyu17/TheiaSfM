@@ -42,7 +42,7 @@
 
 namespace theia {
 
-std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>, std::vector<double>> SimTransformPartialRotationWrapper(
+std::tuple<std::vector<Eigen::Matrix<double, 4, 1>>, std::vector<Eigen::Vector3d>, std::vector<double>> SimTransformPartialRotationWrapper(
     const Eigen::Vector3d& rotation_axis,
     const std::vector<Eigen::Vector3d> image_one_ray_directions_in,
     const std::vector<Eigen::Vector3d> image_one_ray_origins_in,

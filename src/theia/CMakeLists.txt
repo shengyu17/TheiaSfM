@@ -105,6 +105,7 @@ set(THEIA_SRC
   sfm/bundle_adjustment/bundle_adjustment.cc
   sfm/bundle_adjustment/create_loss_function.cc
   sfm/bundle_adjustment/optimize_relative_position_with_known_rotation.cc
+  sfm/camera/camera_wrapper.cc
   sfm/camera/camera_intrinsics_model.cc
   sfm/camera/camera.cc
   sfm/camera/division_undistortion_camera_model.cc
@@ -189,6 +190,7 @@ set(THEIA_SRC
   sfm/set_outlier_tracks_to_unestimated.cc
   sfm/track_builder.cc
   sfm/track.cc
+  sfm/transformation/transformation_wrapper.cc
   sfm/transformation/align_point_clouds.cc
   sfm/transformation/align_reconstructions.cc
   sfm/transformation/align_rotations.cc

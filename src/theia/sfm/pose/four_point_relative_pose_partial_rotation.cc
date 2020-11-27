@@ -140,19 +140,30 @@ bool SolveQEP(const Matrix4d& M, const Matrix4d& C, const Matrix4d& K,
 
 }  // namespace
 
-std::tuple<std::vector<Eigen::Quaterniond>, std::vector<Eigen::Vector3d>> FourPointRelativePosePartialRotationWrapper(
+std::tuple<std::vector<Eigen::Matrix<double,4,1>>, std::vector<Eigen::Vector3d>> FourPointRelativePosePartialRotationWrapper(
     const Vector3d& rotation_axis,
     const std::vector<Vector3d> image_one_ray_directions_in,
     const std::vector<Vector3d> image_one_ray_origins_in,
     const std::vector<Vector3d> image_two_ray_directions_in,
     const std::vector<Vector3d> image_two_ray_origins_in){
-    std::vector<Quaterniond> soln_rotations;
+    std::vector<Quaterniond> soln_rotations_q;
     std::vector<Vector3d> soln_translations;
     const Vector3d image_one_ray_directions[4] = {image_one_ray_directions_in[0],image_one_ray_directions_in[1],image_one_ray_directions_in[2],image_one_ray_directions_in[3]};
     const Vector3d image_one_ray_origins[4] = {image_one_ray_origins_in[0],image_one_ray_origins_in[1],image_one_ray_origins_in[2],image_one_ray_origins_in[3]};
     const Vector3d image_two_ray_directions[4] = {image_two_ray_directions_in[0],image_two_ray_directions_in[1],image_two_ray_directions_in[2],image_two_ray_directions_in[3]};
     const Vector3d image_two_ray_origins[4] = {image_two_ray_origins_in[0],image_two_ray_origins_in[1],image_two_ray_origins_in[2],image_two_ray_origins_in[3]};
-    FourPointRelativePosePartialRotation(rotation_axis, image_one_ray_directions, image_one_ray_origins, image_two_ray_directions, image_two_ray_origins, &soln_rotations, &soln_translations);
+    FourPointRelativePosePartialRotation(rotation_axis, image_one_ray_directions, image_one_ray_origins, image_two_ray_directions, image_two_ray_origins, &soln_rotations_q, &soln_translations);
+
+    std::vector<Eigen::Matrix<double,4,1>> soln_rotations;
+    for (int i=0; i < soln_rotations_q.size(); ++i) {
+        Eigen::Matrix<double,4,1> tmp;
+        tmp(0,0) = soln_rotations_q[i].w();
+        tmp(1,0) = soln_rotations_q[i].x();
+        tmp(2,0) = soln_rotations_q[i].y();
+        tmp(3,0) = soln_rotations_q[i].z();
+        soln_rotations.push_back(tmp);
+    }
+
     return std::make_tuple(soln_rotations, soln_translations);
 }
 
