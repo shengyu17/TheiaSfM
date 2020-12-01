@@ -74,13 +74,6 @@ Matrix<double, 7, 9> SetupEpipolarConstraint(
 
 }  // namespace
 
-std::tuple<bool, std::vector<Eigen::Matrix3d>> SevenPointFundamentalMatrixWrapper(
-    const std::vector<Eigen::Vector2d>& image1_points,
-    const std::vector<Eigen::Vector2d>& image2_points){
-    std::vector<Eigen::Matrix3d> fundamental_matrices;
-    const bool success = SevenPointFundamentalMatrix(image1_points, image2_points, &fundamental_matrices);
-    return std::make_tuple(success, fundamental_matrices);
-}
 
 
 bool SevenPointFundamentalMatrix(

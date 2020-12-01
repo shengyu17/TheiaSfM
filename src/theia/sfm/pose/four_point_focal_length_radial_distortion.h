@@ -44,9 +44,7 @@
 
 namespace theia {
 
-std::tuple<bool, std::vector<Eigen::Matrix3d>, std::vector<Eigen::Vector3d>, std::vector<double>, std::vector<double>> FourPointsPoseFocalLengthRadialDistortionWrapper(
-    const std::vector<Eigen::Vector2d>& feature_vectors,
-    const std::vector<Eigen::Vector3d>& world_points);
+
 
 
 // Computes the absolute pose, focal length and one radial distortion parameter

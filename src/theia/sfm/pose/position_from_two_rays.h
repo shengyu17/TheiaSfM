@@ -40,10 +40,6 @@
 
 namespace theia {
 
-std::tuple<bool, Eigen::Vector3d> PositionFromTwoRaysWrapper(const Eigen::Vector2d& rotated_feature1,
-                         const Eigen::Vector3d& point1,
-                         const Eigen::Vector2d& rotated_feature2,
-                         const Eigen::Vector3d& point2);
 
 // Computes the camera position given two oriented features seen by the camera
 // and their corresponding 3d points. The features should have the effect of

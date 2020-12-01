@@ -40,9 +40,7 @@
 
 namespace theia {
 
-std::tuple<bool, Eigen::Vector3d> RelativePoseFromTwoPointsWithKnownRotationWrapper(
-    const std::vector<Eigen::Vector2d> rotated_features1_in,
-    const std::vector<Eigen::Vector2d> rotated_features2_in);
+
 
 // Computes the relative position of two cameras when the relative position is
 // known. This assumes that the features have been rotated into 3d space and

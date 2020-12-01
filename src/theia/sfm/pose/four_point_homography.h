@@ -40,8 +40,6 @@
 
 namespace theia {
 
-std::tuple<bool, Eigen::Matrix3d> FourPointHomographyWrapper(const std::vector<Eigen::Vector2d>& image_1_points,
-                         const std::vector<Eigen::Vector2d>& image_2_points);
 
 // Normalized DLT method to compute the homography H that maps image points in
 // image_1 to image_2 via x' = Hx (where x is in image 1 and x' is in image

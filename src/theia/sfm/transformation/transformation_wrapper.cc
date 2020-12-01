@@ -50,5 +50,12 @@ std::tuple<std::vector<Eigen::Matrix<double,4,1>>, std::vector<Eigen::Vector3d>,
 }
 
 
+std::vector<Eigen::Vector3d> AlignRotationsWrapper(const std::vector<Eigen::Vector3d>& gt_rotation){
+    std::vector<Eigen::Vector3d> rotation;
+    AlignRotations(gt_rotation, &rotation);
+    return rotation;
+}
+
+
 
 } //namespace theia

@@ -152,32 +152,6 @@ int TwoPointPoseCore(const Vector3d& axis,
 
 }  // namespace
 
-std::tuple<int, std::vector<Eigen::Matrix<double,4,1>>, std::vector<Vector3d>> TwoPointPosePartialRotationWrapper(const Vector3d& axis,
-                                const Vector3d& model_point_1,
-                                const Vector3d& model_point_2,
-                                const Vector3d& image_ray_1,
-                                const Vector3d& image_ray_2){
-
-    Quaterniond soln_rotations_q[2];
-    Vector3d soln_translations_in[2];
-    const int num_solutions = TwoPointPosePartialRotation(axis, model_point_1, model_point_2, image_ray_1, image_ray_2, soln_rotations_q, soln_translations_in);
-
-    std::vector<Eigen::Matrix<double,4,1>> soln_rotations;
-    std::vector<Vector3d> soln_translations_out;
-    soln_translations_out.push_back(soln_translations_in[0]);
-    soln_translations_out.push_back(soln_translations_in[1]);
-
-    for (int i=0; i < 2; ++i) {
-        Eigen::Matrix<double,4,1> tmp;
-        tmp(0,0) = soln_rotations_q[i].w();
-        tmp(1,0) = soln_rotations_q[i].x();
-        tmp(2,0) = soln_rotations_q[i].y();
-        tmp(3,0) = soln_rotations_q[i].z();
-        soln_rotations.push_back(tmp);
-    }
-
-    return std::make_tuple(num_solutions, soln_rotations, soln_translations_out);
-}
 
 
 int TwoPointPosePartialRotation(const Vector3d& axis,

@@ -155,6 +155,7 @@ set(THEIA_SRC
   sfm/hybrid_reconstruction_estimator.cc
   sfm/incremental_reconstruction_estimator.cc
   sfm/localize_view_to_reconstruction.cc
+  sfm/pose/pose_wrapper.cc
   sfm/pose/build_upnp_action_matrix.cc
   sfm/pose/build_upnp_action_matrix_using_symmetry.cc
   sfm/pose/dls_impl.cc
@@ -196,6 +197,7 @@ set(THEIA_SRC
   sfm/transformation/align_rotations.cc
   sfm/transformation/gdls_similarity_transform.cc
   sfm/transformation/transform_reconstruction.cc
+  sfm/triangulation/triangulation_wrapper.cc
   sfm/triangulation/triangulation.cc
   sfm/two_view_match_geometric_verification.cc
   sfm/twoview_info.cc

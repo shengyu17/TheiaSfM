@@ -215,16 +215,6 @@ std::vector<Eigen::Matrix<double,7,1>> PoseFromThreePointsPY(const std::vector<V
 
 }
 
-std::tuple<bool, std::vector<Matrix3d>, std::vector<Vector3d>> PoseFromThreePointsWrapper(const std::vector<Vector2d>& feature_points_in,
-                           const std::vector<Vector3d>& points_3d_in){
-    const Vector2d feature_point[3] = {feature_points_in[0],feature_points_in[1],feature_points_in[2]};
-    const Vector3d points_3d[3] = {points_3d_in[0],points_3d_in[1],points_3d_in[2]};
-
-    std::vector<Matrix3d> solution_rotations;
-    std::vector<Vector3d> solution_translations;
-    const bool success = PoseFromThreePoints(feature_point, points_3d, &solution_rotations, &solution_translations);
-    return std::make_tuple(success, solution_rotations, solution_translations);
-}
 
 bool PoseFromThreePoints(const Vector2d feature_point[3],
                          const Vector3d points_3d[3],

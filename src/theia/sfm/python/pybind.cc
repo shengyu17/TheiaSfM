@@ -11,9 +11,10 @@
 
 #include "theia/math/polynomial.h"
 #include "theia/sfm/pose/util.h"
-//#include "include/theia/theia.h"
+
 
 // header files
+/*
 #include "theia/sfm/pose/perspective_three_point.h"
 #include "theia/sfm/pose/eight_point_fundamental_matrix.h"
 #include "theia/sfm/pose/five_point_relative_pose.h"
@@ -24,7 +25,7 @@
 #include "theia/sfm/pose/four_point_relative_pose_partial_rotation.h"
 #include "theia/sfm/pose/three_point_relative_pose_partial_rotation.h"
 #include "theia/sfm/pose/two_point_pose_partial_rotation.h"
-#include "theia/sfm/triangulation/triangulation.h"
+
 #include "theia/sfm/pose/dls_pnp.h"
 #include "theia/sfm/pose/position_from_two_rays.h"
 #include "theia/sfm/pose/relative_pose_from_two_points_with_known_rotation.h"
@@ -33,6 +34,10 @@
 #include "theia/sfm/pose/essential_matrix_utils.h"
 #include "theia/matching/feature_correspondence.h"
 #include "theia/sfm/pose/fundamental_matrix_util.h"
+*/
+#include "theia/sfm/pose/pose_wrapper.h"
+#include "theia/sfm/triangulation/triangulation.h"
+#include "theia/sfm/triangulation/triangulation_wrapper.h"
 
 #include "theia/sfm/transformation/transformation_wrapper.h"
 #include "theia/sfm/transformation/align_point_clouds.h"
@@ -40,12 +45,27 @@
 
 #include "theia/sfm/camera/camera.h"
 #include "theia/sfm/camera/camera_wrapper.h"
+#include "theia/sfm/camera/camera_intrinsics_model.h"
+#include "theia/sfm/camera/division_undistortion_camera_model.h"
+#include "theia/sfm/camera/fisheye_camera_model.h"
+#include "theia/sfm/camera/fov_camera_model.h"
+#include "theia/sfm/camera/pinhole_camera_model.h"
+#include "theia/sfm/camera/pinhole_radial_tangential_camera_model.h"
+
 
 namespace py = pybind11;
-
 #include <vector>
 #include <iostream>
 #include <pybind11/numpy.h>
+
+template <int N>
+void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
+  py::class_<theia::Prior<N>>(m, ("Prior" + name).c_str())
+      .def(py::init())
+      .def_readwrite("is_set", &theia::Prior<N>::is_set)
+      //.def_readwrite("value", &theia::Prior<N>::value)
+    ;
+  }
 
 PYBIND11_MODULE(pytheia_sfm, m) {
   //matching
@@ -57,6 +77,37 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   ;
 
   //camera
+  AddIntrinsicsPriorType<1>(m, "Scalar");
+  AddIntrinsicsPriorType<2>(m, "Vector2d");
+  AddIntrinsicsPriorType<3>(m, "Vector3d");
+  AddIntrinsicsPriorType<4>(m, "Vector4d");
+  /*
+  AddIntrinsicsPriorType<1>(m, "Focallength");
+  AddIntrinsicsPriorType<2>(m, "Principalpoint");
+  AddIntrinsicsPriorType<1>(m, "Aspectratio");
+  AddIntrinsicsPriorType<1>(m, "Skew");
+  AddIntrinsicsPriorType<4>(m, "Radialdistortion");
+  AddIntrinsicsPriorType<2>(m, "Tangentialdistortion");
+  AddIntrinsicsPriorType<3>(m, "Position");
+  AddIntrinsicsPriorType<3>(m, "Orientation");
+  AddIntrinsicsPriorType<1>(m, "Latitude");
+  AddIntrinsicsPriorType<1>(m, "Longitude");
+  AddIntrinsicsPriorType<1>(m, "Altitude");
+  */
+  py::class_<theia::CameraIntrinsicsModel>(m, "CameraIntrinsicsModel")
+
+
+  ;
+  py::class_<theia::FisheyeCameraModel, theia::CameraIntrinsicsModel>(m, "FisheyeCameraModel")
+    .def(py::init<>())
+    .def("Type", &theia::FisheyeCameraModel::Type)
+    .def("NumParameters", &theia::FisheyeCameraModel::NumParameters)
+    .def("SetFromCameraIntrinsicsPriors", &theia::FisheyeCameraModel::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::FisheyeCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    .def("GetSubsetFromOptimizeIntrinsicsType", &theia::FisheyeCameraModel::GetSubsetFromOptimizeIntrinsicsType)
+    .def("GetCalibrationMatrix", &theia::FisheyeCameraModel::GetCalibrationMatrix)
+    .def("PrintIntrinsics", &theia::FisheyeCameraModel::PrintIntrinsics)
+  ;
   m.def("ComposeProjectionMatrix", theia::ComposeProjectionMatrixWrapper);
   m.def("DecomposeProjectionMatrix", theia::DecomposeProjectionMatrixWrapper);
   m.def("CalibrationMatrixToIntrinsics", theia::CalibrationMatrixToIntrinsicsWrapper);
@@ -140,7 +191,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("AlignPointCloudsUmeyama", theia::AlignPointCloudsUmeyamaWrapper);
   m.def("AlignPointCloudsUmeyamaWithWeights", theia::AlignPointCloudsUmeyamaWithWeightsWrapper);
   m.def("GdlsSimilarityTransform" ,theia::GdlsSimilarityTransformWrapper);
-
+  m.def("AlignRotations", theia::AlignRotationsWrapper);
 
 
 

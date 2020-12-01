@@ -56,24 +56,6 @@ using dls_impl::CreateMacaulayMatrix;
 using dls_impl::ExtractJacobianCoefficients;
 using dls_impl::LeftMultiplyMatrix;
 
-std::tuple<std::vector<Eigen::Matrix<double,4,1>>, std::vector<Vector3d>> DlsPnpWrapper(const std::vector<Vector2d>& feature_positions,
-                                                                                        const std::vector<Vector3d>& world_point){
-    std::vector<Quaterniond> solution_rotation_q;
-    std::vector<Vector3d> solution_translation;
-    DlsPnp(feature_positions, world_point, &solution_rotation_q, &solution_translation);
-
-    std::vector<Eigen::Matrix<double,4,1>> solution_rotation;
-    for (int i=0; i < solution_rotation_q.size(); ++i) {
-        Eigen::Matrix<double,4,1> tmp;
-        tmp(0,0) = solution_rotation_q[i].w();
-        tmp(1,0) = solution_rotation_q[i].x();
-        tmp(2,0) = solution_rotation_q[i].y();
-        tmp(3,0) = solution_rotation_q[i].z();
-        solution_rotation.push_back(tmp);
-    }
-    return std::make_tuple(solution_rotation, solution_translation);
-
-}
 
 
 

@@ -13,10 +13,11 @@
 #include "theia/math/polynomial.h"
 #include "theia/sfm/pose/util.h"
 
+
 PYBIND11_MODULE(pytheia, m) {
 
 
-  m.def("PoseFromThreePoints", theia::PoseFromThreePointsWrapper);
+  //m.def("PoseFromThreePoints", theia::PoseFromThreePointsWrapper);
 
 
 }

@@ -45,10 +45,7 @@ namespace theia {
 
 struct FeatureCorrespondence;
 
-std::tuple<bool, Eigen::Vector4d> TriangulateWrapper(const Matrix3x4d& pose1,
-                 const Matrix3x4d& pose2,
-                 const Eigen::Vector2d& point1,
-                 const Eigen::Vector2d& point2);
+
 
 
 // Triangulates 2 posed views using the "Triangulation Made Easy" by Lindstrom
@@ -62,8 +59,6 @@ bool Triangulate(const Matrix3x4d& pose1,
                  const Eigen::Vector2d& point2,
                  Eigen::Vector4d* triangulated_point);
 
-std::tuple<bool, Eigen::Vector4d> TriangulateMidpointWrapper(const std::vector<Eigen::Vector3d>& origins,
-                         const std::vector<Eigen::Vector3d>& ray_directions);
 
 // Triangulates a 3D point by determining the closest point between the
 // rays. This method is known to be suboptimal in terms of reprojection error
@@ -72,10 +67,6 @@ bool TriangulateMidpoint(const std::vector<Eigen::Vector3d>& origins,
                          const std::vector<Eigen::Vector3d>& ray_directions,
                          Eigen::Vector4d* triangulated_point);
 
-std::tuple<bool, Eigen::Vector4d>  TriangulateDLTWrapper(const Matrix3x4d& pose1,
-                    const Matrix3x4d& pose2,
-                    const Eigen::Vector2d& point1,
-                    const Eigen::Vector2d& point2);
 
 // Triangulates 2 posed views using the DLT method from HZZ 12.2 p 312. The
 // inputs are the projection matrices and the image observations. Returns true
@@ -86,9 +77,6 @@ bool TriangulateDLT(const Matrix3x4d& pose1,
                     const Eigen::Vector2d& point2,
                     Eigen::Vector4d* triangulated_point);
 
-std::tuple<bool, Eigen::Vector4d> TriangulateNViewSVDWrapper(
-    const std::vector<Matrix3x4d>& poses,
-    const std::vector<Eigen::Vector2d>& points);
 
 
 // Computes n-view triangulation by computing the SVD that wil approximately
@@ -99,8 +87,6 @@ bool TriangulateNViewSVD(
     const std::vector<Eigen::Vector2d>& points,
     Eigen::Vector4d* triangulated_point);
 
-std::tuple<bool, Eigen::Vector4d> TriangulateNViewWrapper(const std::vector<Matrix3x4d>& poses,
-                      const std::vector<Eigen::Vector2d>& points);
 
 
 // Computes n-view triangulation by an efficient L2 minimization of the

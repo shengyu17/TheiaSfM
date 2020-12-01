@@ -90,12 +90,7 @@ void GetRigidTransform(const Matrix<double, 3, 4>& points1,
 
 }  // namespace
 
-std::tuple<int, std::vector<Matrix<double, 3, 4>>> FourPointPoseAndFocalLengthWrapper(const std::vector<Vector2d>& feature_vectors,
-                                                                                      const std::vector<Vector3d>& world_points){
-    std::vector<Matrix<double, 3, 4>> projection_matrices;
-    int num_solutions = FourPointPoseAndFocalLength(feature_vectors, world_points, &projection_matrices);
-    return std::make_tuple(num_solutions, projection_matrices);
-}
+
 
 
 int FourPointPoseAndFocalLength(

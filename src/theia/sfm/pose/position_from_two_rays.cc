@@ -41,14 +41,6 @@
 
 namespace theia {
 
-std::tuple<bool, Eigen::Vector3d> PositionFromTwoRaysWrapper(const Eigen::Vector2d& rotated_feature1,
-                         const Eigen::Vector3d& point1,
-                         const Eigen::Vector2d& rotated_feature2,
-                         const Eigen::Vector3d& point2){
-    Eigen::Vector3d position;
-    const bool success = PositionFromTwoRays(rotated_feature1, point1, rotated_feature2, point2, &position);
-    return std::make_tuple(success, position);
-}
 
 // We use the reprojection error constraint:
 //

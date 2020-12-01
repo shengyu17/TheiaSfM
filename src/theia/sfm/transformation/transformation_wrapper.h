@@ -17,6 +17,7 @@ std::tuple<std::vector<Eigen::Matrix<double,4,1>>, std::vector<Eigen::Vector3d>,
                              const std::vector<Eigen::Vector3d>& ray_direction,
                              const std::vector<Eigen::Vector3d>& world_point);
 
+std::vector<Eigen::Vector3d> AlignRotationsWrapper(const std::vector<Eigen::Vector3d>& gt_rotation);
 
 
 }  // namespace theia

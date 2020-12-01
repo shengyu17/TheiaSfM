@@ -40,9 +40,7 @@
 
 namespace theia {
 
-std::tuple<bool, std::vector<Eigen::Matrix3d>> SevenPointFundamentalMatrixWrapper(
-    const std::vector<Eigen::Vector2d>& image1_points,
-    const std::vector<Eigen::Vector2d>& image2_points);
+
 
 // Computes the Fundamental Matrix from seven points. This is a minimal solver
 // for the the fundmanetal matrix and will return either 1 or 3 valid solutions
