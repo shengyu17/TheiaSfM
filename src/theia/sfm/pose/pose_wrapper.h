@@ -27,9 +27,7 @@ std::tuple<int, Eigen::Matrix3d, Eigen::Vector3d> GetBestPoseFromEssentialMatrix
 std::tuple<bool, std::vector<Eigen::Matrix<double, 3, 4> >, std::vector<std::vector<double> >> FivePointFocalLengthRadialDistortionWrapper(
     const std::vector<Eigen::Vector2d>& feature_positions,
     const std::vector<Eigen::Vector3d>& world_points,
-    const int num_radial_distortion_params,
-    std::vector<Eigen::Matrix<double, 3, 4> >* projection_matrices,
-    std::vector<std::vector<double> >* radial_distortions);
+    const int num_radial_distortion_params);
 
 std::tuple<bool, std::vector<Eigen::Matrix3d>> FivePointRelativePoseWrapper(const std::vector<Eigen::Vector2d>& image1_points,
                            const std::vector<Eigen::Vector2d>& image2_points);

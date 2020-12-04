@@ -40,4 +40,5 @@ std::tuple<bool, Matrix3x4d> ComposeProjectionMatrixWrapper(const Eigen::Matrix3
     return std::make_tuple(success,pmatrix);
 }
 
+
 }  // namespace theia

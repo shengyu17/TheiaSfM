@@ -152,7 +152,7 @@ Eigen::Vector3d CameraIntrinsicsModel::ImageToCameraCoordinates(
 }
 
 Eigen::Vector2d CameraIntrinsicsModel::DistortPoint(
-    const Eigen::Vector2d& undistorted_point) const {
+    const Eigen::Vector2d& undistorted_point)  {
   Eigen::Vector2d distorted_point;
 
 // Define the functions that we want to execute in every case of the switch

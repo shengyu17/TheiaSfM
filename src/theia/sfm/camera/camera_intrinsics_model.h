@@ -184,7 +184,7 @@ class CameraIntrinsicsModel {
   // given in *normalized* coordinates such that the effects of camera
   // intrinsics are not present.
   virtual Eigen::Vector2d DistortPoint(
-      const Eigen::Vector2d& undistorted_point) const;
+      const Eigen::Vector2d& undistorted_point) ;
   virtual Eigen::Vector2d UndistortPoint(
       const Eigen::Vector2d& distorted_point) const;
 

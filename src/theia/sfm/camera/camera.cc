@@ -188,6 +188,14 @@ bool Camera::InitializeFromProjectionMatrix(
   return true;
 }
 
+
+Matrix3x4d Camera::GetProjectionMatrixWrapper(){
+    Matrix3x4d pmatrix;
+    Camera::GetProjectionMatrix(&pmatrix);
+    return pmatrix;
+}
+
+
 void Camera::GetProjectionMatrix(Matrix3x4d* pmatrix) const {
   Matrix3d calibration_matrix;
   camera_intrinsics_->GetCalibrationMatrix(&calibration_matrix);
@@ -195,6 +203,12 @@ void Camera::GetProjectionMatrix(Matrix3x4d* pmatrix) const {
                           GetOrientationAsAngleAxis(),
                           GetPosition(),
                           pmatrix);
+}
+
+Eigen::Matrix3d Camera::GetCalibrationMatrixWrapper(){
+    Eigen::Matrix3d kmatrix;
+    Camera::GetCalibrationMatrix(&kmatrix);
+    return kmatrix;
 }
 
 void Camera::GetCalibrationMatrix(Matrix3d* kmatrix) const {

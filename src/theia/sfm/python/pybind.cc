@@ -52,6 +52,9 @@
 #include "theia/sfm/camera/pinhole_camera_model.h"
 #include "theia/sfm/camera/pinhole_radial_tangential_camera_model.h"
 
+// for overloaded function in CameraInstrinsicsModel
+template <typename... Args>
+using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 namespace py = pybind11;
 #include <vector>
@@ -63,7 +66,7 @@ void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
   py::class_<theia::Prior<N>>(m, ("Prior" + name).c_str())
       .def(py::init())
       .def_readwrite("is_set", &theia::Prior<N>::is_set)
-      //.def_readwrite("value", &theia::Prior<N>::value)
+      .def_property("value", &theia::Prior<N>::GetParametersValues, &theia::Prior<N>::SetParametersValues)
     ;
   }
 
@@ -94,37 +97,169 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   AddIntrinsicsPriorType<1>(m, "Longitude");
   AddIntrinsicsPriorType<1>(m, "Altitude");
   */
+
+  // abstract superclass and 5 subclasses (camera models)
   py::class_<theia::CameraIntrinsicsModel>(m, "CameraIntrinsicsModel")
+    .def_property("FocalLength", &theia::CameraIntrinsicsModel::FocalLength, &theia::CameraIntrinsicsModel::SetFocalLength)
+    .def_property_readonly("PrincipalPointX", &theia::CameraIntrinsicsModel::PrincipalPointX)
+    .def_property_readonly("PrincipalPointY", &theia::CameraIntrinsicsModel::PrincipalPointY)
+    .def("SetPrincipalPoint", &theia::CameraIntrinsicsModel::SetPrincipalPoint)
+    .def("CameraToImageCoordinates", &theia::CameraIntrinsicsModel::CameraToImageCoordinates)
+    .def("ImageToCameraCoordinates", &theia::CameraIntrinsicsModel::ImageToCameraCoordinates)
+    // need to add pointer later
+    //.def("DistortPoint", py::overload_cast<const Eigen::Vector2d>(&theia::CameraIntrinsicsModel::DistortPoint, py::const_))
+    //.def("DistortPoint",   py::overload_cast<const Eigen::Vector2d&>(&theia::CameraIntrinsicsModel::DistortPoint, py::const_));
+    //.def("DistortPoint", static_cast<Eigen::Vector2d (theia::CameraIntrinsicsModel::*)(const Eigen::Vector2d &)>(&theia::CameraIntrinsicsModel::DistortPoint), "Set the pet's name")
+    //.def("DistortPoint", overload_cast_<const Eigen::Vector2d>()(&theia::CameraIntrinsicsModel::DistortPoint), "Set the pet's age")
+
+
+    .def("DistortPoint",
+         (Eigen::Vector2d
+          (theia::CameraIntrinsicsModel::*)(const Eigen::Vector2d& )) &theia::CameraIntrinsicsModel::DistortPoint,
+         py::return_value_policy::reference_internal)
+
+    //.def("UndistortPoint",(Eigen::Vector2d (theia::CameraIntrinsicsModel::*)(const Eigen::Vector2d& )) &
+    //     theia::CameraIntrinsicsModel::UndistortPoint, py::arg("UndistortPoint"))
+    //.def("DistortPoint", &theia::CameraIntrinsicsModel::DistortPoint)
+    //.def("UndistortPoint", &theia::CameraIntrinsicsModel::UndistortPoint)
+
+
 
 
   ;
+  // FisheyeCameraModel
   py::class_<theia::FisheyeCameraModel, theia::CameraIntrinsicsModel>(m, "FisheyeCameraModel")
     .def(py::init<>())
     .def("Type", &theia::FisheyeCameraModel::Type)
     .def("NumParameters", &theia::FisheyeCameraModel::NumParameters)
     .def("SetFromCameraIntrinsicsPriors", &theia::FisheyeCameraModel::SetFromCameraIntrinsicsPriors)
     .def("CameraIntrinsicsPriorFromIntrinsics", &theia::FisheyeCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    // OptimizeIntrinsicsType not defined
     .def("GetSubsetFromOptimizeIntrinsicsType", &theia::FisheyeCameraModel::GetSubsetFromOptimizeIntrinsicsType)
     .def("GetCalibrationMatrix", &theia::FisheyeCameraModel::GetCalibrationMatrix)
     .def("PrintIntrinsics", &theia::FisheyeCameraModel::PrintIntrinsics)
+    .def_property_readonly("kIntrinsicsSize", &theia::FisheyeCameraModel::NumParameters)
+    .def_property("AspectRatio", &theia::FisheyeCameraModel::AspectRatio, &theia::FisheyeCameraModel::SetAspectRatio)
+    .def_property("Skew", &theia::FisheyeCameraModel::Skew, &theia::FisheyeCameraModel::SetSkew)
+    .def_property_readonly("RadialDistortion1", &theia::FisheyeCameraModel::RadialDistortion1)
+    .def_property_readonly("RadialDistortion2", &theia::FisheyeCameraModel::RadialDistortion2)
+    .def_property_readonly("RadialDistortion3", &theia::FisheyeCameraModel::RadialDistortion3)
+    .def_property_readonly("RadialDistortion4", &theia::FisheyeCameraModel::RadialDistortion4)
+    .def("SetRadialDistortion", &theia::FisheyeCameraModel::SetRadialDistortion)
+
   ;
+  // PinholeRadialTangentialCameraModel
+  py::class_<theia::PinholeRadialTangentialCameraModel, theia::CameraIntrinsicsModel>(m, "PinholeRadialTangentialCameraModel")
+    .def(py::init<>())
+    .def("Type", &theia::PinholeRadialTangentialCameraModel::Type)
+    .def("NumParameters", &theia::PinholeRadialTangentialCameraModel::NumParameters)
+    .def("SetFromCameraIntrinsicsPriors", &theia::PinholeRadialTangentialCameraModel::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::PinholeRadialTangentialCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    // OptimizeIntrinsicsType not defined
+    .def("GetSubsetFromOptimizeIntrinsicsType", &theia::PinholeRadialTangentialCameraModel::GetSubsetFromOptimizeIntrinsicsType)
+    .def("GetCalibrationMatrix", &theia::PinholeRadialTangentialCameraModel::GetCalibrationMatrix)
+    .def("PrintIntrinsics", &theia::PinholeRadialTangentialCameraModel::PrintIntrinsics)
+    .def_property_readonly("kIntrinsicsSize", &theia::PinholeRadialTangentialCameraModel::NumParameters)
+    .def_property("AspectRatio", &theia::PinholeRadialTangentialCameraModel::AspectRatio, &theia::PinholeRadialTangentialCameraModel::SetAspectRatio)
+    .def_property("Skew", &theia::PinholeRadialTangentialCameraModel::Skew, &theia::PinholeRadialTangentialCameraModel::SetSkew)
+    .def_property_readonly("RadialDistortion1", &theia::PinholeRadialTangentialCameraModel::RadialDistortion1)
+    .def_property_readonly("RadialDistortion2", &theia::PinholeRadialTangentialCameraModel::RadialDistortion2)
+    .def_property_readonly("RadialDistortion3", &theia::PinholeRadialTangentialCameraModel::RadialDistortion3)
+    .def_property_readonly("TangentialDistortion1", &theia::PinholeRadialTangentialCameraModel::TangentialDistortion1)
+    .def_property_readonly("TangentialDistortion2", &theia::PinholeRadialTangentialCameraModel::TangentialDistortion2)
+    .def("SetRadialDistortion", &theia::PinholeRadialTangentialCameraModel::SetRadialDistortion)
+    .def("SetTangentialDistortion", &theia::PinholeRadialTangentialCameraModel::SetTangentialDistortion)
+
+  ;
+  // DivisionUndistortionCameraModel
+  py::class_<theia::DivisionUndistortionCameraModel, theia::CameraIntrinsicsModel>(m, "DivisionUndistortionCameraModel")
+    .def(py::init<>())
+    .def("Type", &theia::DivisionUndistortionCameraModel::Type)
+    .def("NumParameters", &theia::DivisionUndistortionCameraModel::NumParameters)
+    .def("SetFromCameraIntrinsicsPriors", &theia::DivisionUndistortionCameraModel::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::DivisionUndistortionCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    // OptimizeIntrinsicsType not defined
+    .def("GetSubsetFromOptimizeIntrinsicsType", &theia::DivisionUndistortionCameraModel::GetSubsetFromOptimizeIntrinsicsType)
+    .def("GetCalibrationMatrix", &theia::DivisionUndistortionCameraModel::GetCalibrationMatrix)
+    .def("PrintIntrinsics", &theia::DivisionUndistortionCameraModel::PrintIntrinsics)
+    .def_property_readonly("kIntrinsicsSize", &theia::DivisionUndistortionCameraModel::NumParameters)
+    .def_property("AspectRatio", &theia::DivisionUndistortionCameraModel::AspectRatio, &theia::DivisionUndistortionCameraModel::SetAspectRatio)
+    .def_property_readonly("RadialDistortion1", &theia::DivisionUndistortionCameraModel::RadialDistortion1)
+    .def("SetRadialDistortion", &theia::DivisionUndistortionCameraModel::SetRadialDistortion)
+
+  ;
+
+  // PinholeCameraModel
+  py::class_<theia::PinholeCameraModel, theia::CameraIntrinsicsModel>(m, "PinholeCameraModel")
+    .def(py::init<>())
+    .def("Type", &theia::PinholeCameraModel::Type)
+    .def("NumParameters", &theia::PinholeCameraModel::NumParameters)
+    .def("SetFromCameraIntrinsicsPriors", &theia::PinholeCameraModel::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::PinholeCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    // OptimizeIntrinsicsType not defined
+    .def("GetSubsetFromOptimizeIntrinsicsType", &theia::PinholeCameraModel::GetSubsetFromOptimizeIntrinsicsType)
+    .def("GetCalibrationMatrix", &theia::PinholeCameraModel::GetCalibrationMatrix)
+    .def("PrintIntrinsics", &theia::PinholeCameraModel::PrintIntrinsics)
+    .def_property_readonly("kIntrinsicsSize", &theia::PinholeCameraModel::NumParameters)
+    .def_property("AspectRatio", &theia::PinholeCameraModel::AspectRatio, &theia::PinholeCameraModel::SetAspectRatio)
+    .def_property("Skew", &theia::PinholeCameraModel::Skew, &theia::PinholeCameraModel::SetSkew)
+    .def_property_readonly("RadialDistortion1", &theia::PinholeCameraModel::RadialDistortion1)
+    .def_property_readonly("RadialDistortion2", &theia::PinholeCameraModel::RadialDistortion2)
+    .def("SetRadialDistortion", &theia::PinholeCameraModel::SetRadialDistortion)
+
+  ;
+
+  // FOVCameraModel
+  py::class_<theia::FOVCameraModel, theia::CameraIntrinsicsModel>(m, "FOVCameraModel")
+    .def(py::init<>())
+    .def("Type", &theia::FOVCameraModel::Type)
+    .def("NumParameters", &theia::FOVCameraModel::NumParameters)
+    .def("SetFromCameraIntrinsicsPriors", &theia::FOVCameraModel::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::FOVCameraModel::CameraIntrinsicsPriorFromIntrinsics)
+    // OptimizeIntrinsicsType not defined
+    .def("GetSubsetFromOptimizeIntrinsicsType", &theia::FOVCameraModel::GetSubsetFromOptimizeIntrinsicsType)
+    .def("GetCalibrationMatrix", &theia::FOVCameraModel::GetCalibrationMatrix)
+    .def("PrintIntrinsics", &theia::FOVCameraModel::PrintIntrinsics)
+    .def_property_readonly("kIntrinsicsSize", &theia::FOVCameraModel::NumParameters)
+    .def_property("AspectRatio", &theia::FOVCameraModel::AspectRatio, &theia::FOVCameraModel::SetAspectRatio)
+    .def_property_readonly("RadialDistortion1", &theia::FOVCameraModel::RadialDistortion1)
+    .def("SetRadialDistortion", &theia::FOVCameraModel::SetRadialDistortion)
+
+  ;
+
   m.def("ComposeProjectionMatrix", theia::ComposeProjectionMatrixWrapper);
   m.def("DecomposeProjectionMatrix", theia::DecomposeProjectionMatrixWrapper);
   m.def("CalibrationMatrixToIntrinsics", theia::CalibrationMatrixToIntrinsicsWrapper);
   m.def("IntrinsicsToCalibrationMatrix", theia::IntrinsicsToCalibrationMatrixWrapper);
 
-//  py::class_<theia::Prior>(m, "Prior")
-//    .def(py::init())
-//    .def(py::init<Eigen::Vector2d, Eigen::Vector2d>())
-//    .def_readwrite("is_set", &theia::Prior::is_set)
-//    .def_readwrite("value", &theia::Prior::value)
-//  ;
+
 
   py::class_<theia::Camera>(m, "Camera")
     .def(py::init())
     .def(py::init<theia::Camera>())
-    .def("ImageWidth", &theia::Camera::ImageWidth)
-    .def("ImageHeight", &theia::Camera::ImageHeight)
+    .def("SetFromCameraIntrinsicsPriors", &theia::Camera::SetFromCameraIntrinsicsPriors)
+    .def("CameraIntrinsicsPriorFromIntrinsics", &theia::Camera::CameraIntrinsicsPriorFromIntrinsics)
+    .def("GetCameraIntrinsicsModelType", &theia::Camera::GetCameraIntrinsicsModelType)
+    .def("SetCameraIntrinsicsModelType", &theia::Camera::SetCameraIntrinsicsModelType)
+    .def("InitializeFromProjectionMatrix", &theia::Camera::InitializeFromProjectionMatrix)
+    .def("GetCalibrationMatrix", &theia::Camera::GetCalibrationMatrixWrapper)
+    .def("GetProjectionMatrix", &theia::Camera::GetProjectionMatrixWrapper)
+    .def_property("FocalLength", &theia::Camera::FocalLength, &theia::Camera::SetFocalLength)
+    .def_property_readonly("ImageHeight", &theia::Camera::ImageHeight)
+    .def_property_readonly("ImageWidth", &theia::Camera::ImageWidth)
+    .def("SetImageSize", &theia::Camera::SetImageSize)
+    .def_property_readonly("PrincipalPointX", &theia::Camera::PrincipalPointX)
+    .def_property_readonly("PrincipalPointY", &theia::Camera::PrincipalPointY)
+    .def("SetPrincipalPoint", &theia::Camera::SetPrincipalPoint)
+    .def("GetOrientationAsAngleAxis", &theia::Camera::GetOrientationAsAngleAxis)
+    .def("GetOrientationAsRotationMatrix", &theia::Camera::GetOrientationAsRotationMatrix)
+    .def("SetOrientationFromAngleAxis", &theia::Camera::SetOrientationFromAngleAxis)
+    .def("SetOrientationFromRotationMatrix", &theia::Camera::SetOrientationFromRotationMatrix)
+    .def_property_readonly("Position", &theia::Camera::GetPosition)
+    .def("SetPosition", &theia::Camera::SetPosition)
+    .def("PrintCameraIntrinsics", &theia::Camera::PrintCameraIntrinsics)
+    .def("PixelToNormalizedCoordinates", &theia::Camera::PixelToNormalizedCoordinates)
+    .def("PixelToUnitDepthRay", &theia::Camera::PixelToUnitDepthRay)
     //.def_readonly_static("kExtrinsicsSize", &theia::Camera::kExtrinsicsSize)
   ;
 
@@ -169,7 +304,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("FourPointHomography", theia::FourPointHomographyWrapper);
   m.def("FourPointsPoseFocalLengthRadialDistortion", theia::FourPointsPoseFocalLengthRadialDistortionWrapper);
   m.def("FourPointRelativePosePartialRotation", theia::FourPointRelativePosePartialRotationWrapper);
-  //m.def("FivePointFocalLengthRadialDistortion", theia::FivePointFocalLengthRadialDistortionWrapper);
+  m.def("FivePointFocalLengthRadialDistortion", theia::FivePointFocalLengthRadialDistortionWrapper);
   m.def("ThreePointRelativePosePartialRotation", theia::ThreePointRelativePosePartialRotationWrapper);
   m.def("TwoPointPosePartialRotation", theia::TwoPointPosePartialRotationWrapper);
   m.def("DlsPnp", theia::DlsPnpWrapper);
