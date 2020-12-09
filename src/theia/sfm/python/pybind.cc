@@ -52,6 +52,12 @@
 #include "theia/sfm/camera/pinhole_camera_model.h"
 #include "theia/sfm/camera/pinhole_radial_tangential_camera_model.h"
 
+#include "theia/sfm/view.h"
+#include "theia/sfm/track.h"
+#include "theia/sfm/reconstruction.h"
+#include "theia/sfm/twoview_info.h"
+#include "theia/sfm/view_graph/view_graph.h"
+
 // for overloaded function in CameraInstrinsicsModel
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
@@ -60,6 +66,9 @@ namespace py = pybind11;
 #include <vector>
 #include <iostream>
 #include <pybind11/numpy.h>
+
+// Initialize gtest
+//google::InitGoogleLogging(argv[0]);
 
 template <int N>
 void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
@@ -71,6 +80,7 @@ void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
   }
 
 PYBIND11_MODULE(pytheia_sfm, m) {
+
   //matching
   py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
     .def(py::init())
@@ -342,6 +352,117 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("TriangulateNView", theia::TriangulateNViewWrapper);
   m.def("IsTriangulatedPointInFrontOfCameras", theia::IsTriangulatedPointInFrontOfCameras);
   m.def("SufficientTriangulationAngle", theia::SufficientTriangulationAngle);
+
+
+  // View class
+  py::class_<theia::View>(m, "View")
+    .def(py::init<>())
+    .def(py::init<std::string>())
+    .def_property_readonly("Name", &theia::View::Name)
+    .def_property("IsEstimated", &theia::View::IsEstimated, &theia::View::SetEstimated)
+    .def("NumFeatures", &theia::View::NumFeatures)
+    .def("AddFeature", &theia::View::AddFeature)
+    .def("RemoveFeature", &theia::View::RemoveFeature)
+    .def_property_readonly("TrackIds", &theia::View::TrackIds)
+    //.def_readwrite("focal_length", &theia::View::Track)
+
+    .def("GetFeature", &theia::View::GetFeature, py::return_value_policy::reference)
+    .def("Camera", &theia::View::Camera, "Camera class object")
+    .def("CameraIntrinsicsPrior", &theia::View::CameraIntrinsicsPrior)
+
+  ;
+
+  // Track class
+  py::class_<theia::Track>(m, "Track")
+    .def(py::init<>())
+
+    //.def_property_readonly("Name", &theia::View::Name)
+    .def_property("IsEstimated", &theia::Track::IsEstimated, &theia::Track::SetEstimated)
+    .def("NumViews", &theia::Track::NumViews)
+    .def("AddView", &theia::Track::AddView)
+    .def("RemoveView", &theia::Track::RemoveView)
+    .def_property_readonly("ViewIds", &theia::Track::ViewIds)
+    //.def_readwrite("focal_length", &theia::View::Track)
+
+    //.def("GetFeature", &theia::View::GetFeature, py::return_value_policy::reference)
+    .def("Point", &theia::Track::Point)
+    .def("Color", &theia::Track::Color)
+
+  ;
+
+
+  // Reconstruction class
+  py::class_<theia::Reconstruction>(m, "Reconstruction")
+    .def(py::init<>())
+
+    //.def_property("IsEstimated", &theia::Reconstruction::IsEstimated, &theia::Track::SetEstimated)
+    .def("NumViews", &theia::Reconstruction::NumViews)
+    .def("ViewIdFromName", &theia::Reconstruction::ViewIdFromName)
+    //.def("set", static_cast<void (Pet::*)(int)>(&Pet::set), "Set the pet's age")
+    //.def("AddView", static_cast<theia::ViewId (theia::Reconstruction*)(const std::string&)>(&theia::Reconstruction::AddView))
+    .def("AddView", (theia::ViewId (theia::Reconstruction::*)(const std::string&)) &theia::Reconstruction::AddView, py::return_value_policy::reference_internal)
+    .def("AddView", (theia::ViewId (theia::Reconstruction::*)(const std::string&, const theia::CameraIntrinsicsGroupId)) &theia::Reconstruction::AddView, py::return_value_policy::reference_internal)
+    .def("RemoveView", &theia::Reconstruction::RemoveView)
+    .def_property_readonly("ViewIds", &theia::Reconstruction::ViewIds)
+
+    .def_property_readonly("NumTracks", &theia::Reconstruction::NumTracks)
+    .def("AddTrack", (theia::TrackId (theia::Reconstruction::*)()) &theia::Reconstruction::AddTrack, py::return_value_policy::reference_internal)
+    .def("AddTrack", (theia::TrackId (theia::Reconstruction::*)(const std::vector<std::pair<theia::ViewId, theia::Feature>>&)) &theia::Reconstruction::AddTrack, py::return_value_policy::reference_internal)
+
+          //.def("AddTrack", &theia::Reconstruction::AddTrack)
+    .def("RemoveTrack", &theia::Reconstruction::RemoveTrack)
+    .def_property_readonly("TrackIds", &theia::Reconstruction::TrackIds)
+
+    .def("AddObservation", &theia::Reconstruction::AddObservation)
+    .def_property_readonly("NumCameraIntrinsicGroups", &theia::Reconstruction::NumCameraIntrinsicGroups)
+    .def("Normalize", &theia::Reconstruction::Normalize)
+    .def("CameraIntrinsicsGroupIdFromViewId", &theia::Reconstruction::CameraIntrinsicsGroupIdFromViewId)
+    .def("CameraIntrinsicsGroupIds", &theia::Reconstruction::CameraIntrinsicsGroupIds)
+
+
+    .def("View", &theia::Reconstruction::View, py::return_value_policy::reference)
+    .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
+
+  ;
+
+  // TwoViewInfo
+  py::class_<theia::TwoViewInfo>(m, "TwoViewInfo")
+    .def(py::init<>())
+    .def_readwrite("focal_length_1", &theia::TwoViewInfo::focal_length_1)
+    .def_readwrite("focal_length_2", &theia::TwoViewInfo::focal_length_2)
+    .def_readwrite("position_2", &theia::TwoViewInfo::position_2)
+    .def_readwrite("rotation_2", &theia::TwoViewInfo::rotation_2)
+    .def_readwrite("num_verified_matches", &theia::TwoViewInfo::num_verified_matches)
+    .def_readwrite("num_homography_inliers", &theia::TwoViewInfo::num_homography_inliers)
+    .def_readwrite("visibility_score", &theia::TwoViewInfo::visibility_score)
+  ;
+
+  m.def("SwapCameras", &theia::SwapCameras);
+
+
+  // ViewGraph
+  py::class_<theia::ViewGraph>(m, "ViewGraph")
+    .def(py::init<>())
+    //.def_property_readonly("Name", &theia::View::Name)
+    .def("ReadFromDisk", &theia::ViewGraph::ReadFromDisk)
+    .def("WriteToDisk", &theia::ViewGraph::WriteToDisk)
+    .def("HasView", &theia::ViewGraph::HasView)
+    .def("RemoveView", &theia::ViewGraph::RemoveView)
+    .def("HasEdge", &theia::ViewGraph::HasEdge)
+    .def("AddEdge", &theia::ViewGraph::AddEdge)
+    .def("RemoveEdge", &theia::ViewGraph::RemoveEdge)
+    .def_property_readonly("NumViews", &theia::ViewGraph::NumViews)
+    .def_property_readonly("NumEdges", &theia::ViewGraph::NumEdges)
+    .def("GetNeighborIdsForView", &theia::ViewGraph::GetNeighborIdsForView, py::return_value_policy::reference)
+    .def("GetEdge", &theia::ViewGraph::GetEdge, py::return_value_policy::reference)
+    .def("GetAllEdges", &theia::ViewGraph::GetAllEdges)
+
+    // not sure pointer as input
+    //.def("ExtractSubgraph", &theia::ViewGraph::ExtractSubgraph)
+    //.def("GetLargestConnectedComponentIds", &theia::ViewGraph::GetLargestConnectedComponentIds)
+
+  ;
+
 
 
 }
