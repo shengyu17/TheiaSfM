@@ -191,7 +191,7 @@ bool Camera::InitializeFromProjectionMatrix(
 
 Matrix3x4d Camera::GetProjectionMatrixWrapper(){
     Matrix3x4d pmatrix;
-    Camera::GetProjectionMatrix(&pmatrix);
+    GetProjectionMatrix(&pmatrix);
     return pmatrix;
 }
 
@@ -207,7 +207,7 @@ void Camera::GetProjectionMatrix(Matrix3x4d* pmatrix) const {
 
 Eigen::Matrix3d Camera::GetCalibrationMatrixWrapper(){
     Eigen::Matrix3d kmatrix;
-    Camera::GetCalibrationMatrix(&kmatrix);
+    GetCalibrationMatrix(&kmatrix);
     return kmatrix;
 }
 
@@ -224,6 +224,12 @@ double Camera::ProjectPoint(const Vector4d& point, Vector2d* pixel) const {
   *pixel = camera_intrinsics_->CameraToImageCoordinates(rotated_point);
 
   return rotated_point[2] / point[3];
+}
+
+std::tuple<double, Eigen::Vector2d> Camera::ProjectPointWrapper(const Eigen::Vector4d& point){
+    Eigen::Vector2d pixel;
+    double depth = ProjectPoint(point, &pixel);
+    return std::make_tuple(depth, pixel);
 }
 
 Vector3d Camera::PixelToUnitDepthRay(const Vector2d& pixel) const {

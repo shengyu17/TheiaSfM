@@ -45,6 +45,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <tuple>
 
 #include "theia/sfm/camera/camera_intrinsics_model.h"
 #include "theia/sfm/camera/camera_intrinsics_model_type.h"
@@ -122,6 +123,8 @@ class Camera {
   // infinity.
   double ProjectPoint(const Eigen::Vector4d& point,
                       Eigen::Vector2d* pixel) const;
+
+  std::tuple<double, Eigen::Vector2d> ProjectPointWrapper(const Eigen::Vector4d& point);
 
   // Converts the pixel point to a ray in 3D space such that the origin of the
   // ray is at the camera center and the direction is the pixel direction

@@ -99,14 +99,16 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   */
 
   // abstract superclass and 5 subclasses (camera models)
-  py::class_<theia::CameraIntrinsicsModel>(m, "CameraIntrinsicsModel")
-    .def_property("FocalLength", &theia::CameraIntrinsicsModel::FocalLength, &theia::CameraIntrinsicsModel::SetFocalLength)
+  py::class_<theia::CameraIntrinsicsModel, std::shared_ptr<theia::CameraIntrinsicsModel>> camera_intrinsics_model(m, "CameraIntrinsicsModel");
+  camera_intrinsics_model.def_property("FocalLength", &theia::CameraIntrinsicsModel::FocalLength, &theia::CameraIntrinsicsModel::SetFocalLength)
     .def_property_readonly("PrincipalPointX", &theia::CameraIntrinsicsModel::PrincipalPointX)
     .def_property_readonly("PrincipalPointY", &theia::CameraIntrinsicsModel::PrincipalPointY)
     .def("SetPrincipalPoint", &theia::CameraIntrinsicsModel::SetPrincipalPoint)
     .def("CameraToImageCoordinates", &theia::CameraIntrinsicsModel::CameraToImageCoordinates)
     .def("ImageToCameraCoordinates", &theia::CameraIntrinsicsModel::ImageToCameraCoordinates)
-    // need to add pointer later
+    .def("GetParameter", &theia::CameraIntrinsicsModel::GetParameter)
+    .def("SetParameter", &theia::CameraIntrinsicsModel::SetParameter)
+
     //.def("DistortPoint", py::overload_cast<const Eigen::Vector2d>(&theia::CameraIntrinsicsModel::DistortPoint, py::const_))
     //.def("DistortPoint",   py::overload_cast<const Eigen::Vector2d&>(&theia::CameraIntrinsicsModel::DistortPoint, py::const_));
     //.def("DistortPoint", static_cast<Eigen::Vector2d (theia::CameraIntrinsicsModel::*)(const Eigen::Vector2d &)>(&theia::CameraIntrinsicsModel::DistortPoint), "Set the pet's name")
@@ -120,15 +122,14 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
     //.def("UndistortPoint",(Eigen::Vector2d (theia::CameraIntrinsicsModel::*)(const Eigen::Vector2d& )) &
     //     theia::CameraIntrinsicsModel::UndistortPoint, py::arg("UndistortPoint"))
-    //.def("DistortPoint", &theia::CameraIntrinsicsModel::DistortPoint)
-    //.def("UndistortPoint", &theia::CameraIntrinsicsModel::UndistortPoint)
+
 
 
 
 
   ;
   // FisheyeCameraModel
-  py::class_<theia::FisheyeCameraModel, theia::CameraIntrinsicsModel>(m, "FisheyeCameraModel")
+  py::class_<theia::FisheyeCameraModel, std::shared_ptr<theia::FisheyeCameraModel>>(m, "FisheyeCameraModel", camera_intrinsics_model)
     .def(py::init<>())
     .def("Type", &theia::FisheyeCameraModel::Type)
     .def("NumParameters", &theia::FisheyeCameraModel::NumParameters)
@@ -149,7 +150,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
   // PinholeRadialTangentialCameraModel
-  py::class_<theia::PinholeRadialTangentialCameraModel, theia::CameraIntrinsicsModel>(m, "PinholeRadialTangentialCameraModel")
+  py::class_<theia::PinholeRadialTangentialCameraModel, std::shared_ptr<theia::PinholeRadialTangentialCameraModel>>(m, "PinholeRadialTangentialCameraModel", camera_intrinsics_model)
     .def(py::init<>())
     .def("Type", &theia::PinholeRadialTangentialCameraModel::Type)
     .def("NumParameters", &theia::PinholeRadialTangentialCameraModel::NumParameters)
@@ -172,7 +173,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
   // DivisionUndistortionCameraModel
-  py::class_<theia::DivisionUndistortionCameraModel, theia::CameraIntrinsicsModel>(m, "DivisionUndistortionCameraModel")
+  py::class_<theia::DivisionUndistortionCameraModel, std::shared_ptr<theia::DivisionUndistortionCameraModel>>(m, "DivisionUndistortionCameraModel", camera_intrinsics_model)
     .def(py::init<>())
     .def("Type", &theia::DivisionUndistortionCameraModel::Type)
     .def("NumParameters", &theia::DivisionUndistortionCameraModel::NumParameters)
@@ -190,7 +191,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   ;
 
   // PinholeCameraModel
-  py::class_<theia::PinholeCameraModel, theia::CameraIntrinsicsModel>(m, "PinholeCameraModel")
+  py::class_<theia::PinholeCameraModel, std::shared_ptr<theia::PinholeCameraModel>>(m, "PinholeCameraModel", camera_intrinsics_model)
     .def(py::init<>())
     .def("Type", &theia::PinholeCameraModel::Type)
     .def("NumParameters", &theia::PinholeCameraModel::NumParameters)
@@ -210,7 +211,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   ;
 
   // FOVCameraModel
-  py::class_<theia::FOVCameraModel, theia::CameraIntrinsicsModel>(m, "FOVCameraModel")
+  py::class_<theia::FOVCameraModel, std::shared_ptr<theia::FOVCameraModel>>(m, "FOVCameraModel", camera_intrinsics_model)
     .def(py::init<>())
     .def("Type", &theia::FOVCameraModel::Type)
     .def("NumParameters", &theia::FOVCameraModel::NumParameters)
@@ -234,9 +235,11 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
 
 
-  py::class_<theia::Camera>(m, "Camera")
+  py::class_<theia::Camera, std::shared_ptr<theia::Camera>>(m, "Camera")
     .def(py::init())
     .def(py::init<theia::Camera>())
+    .def(py::init<theia::CameraIntrinsicsModelType>())
+    .def("CameraIntrinsics", &theia::Camera::CameraIntrinsics, py::return_value_policy::reference)
     .def("SetFromCameraIntrinsicsPriors", &theia::Camera::SetFromCameraIntrinsicsPriors)
     .def("CameraIntrinsicsPriorFromIntrinsics", &theia::Camera::CameraIntrinsicsPriorFromIntrinsics)
     .def("GetCameraIntrinsicsModelType", &theia::Camera::GetCameraIntrinsicsModelType)
@@ -260,6 +263,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("PrintCameraIntrinsics", &theia::Camera::PrintCameraIntrinsics)
     .def("PixelToNormalizedCoordinates", &theia::Camera::PixelToNormalizedCoordinates)
     .def("PixelToUnitDepthRay", &theia::Camera::PixelToUnitDepthRay)
+    .def("ProjectPoint", &theia::Camera::ProjectPointWrapper)
     //.def_readonly_static("kExtrinsicsSize", &theia::Camera::kExtrinsicsSize)
   ;
 
