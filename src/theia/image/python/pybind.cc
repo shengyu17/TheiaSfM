@@ -107,7 +107,7 @@ PYBIND11_MODULE(pytheia_image, m) {
 
     ;
 
-    py::class_<theia::SiftDescriptorExtractor, theia::DescriptorExtractor>(m, "AkazeDescriptorExtractor")
+    py::class_<theia::SiftDescriptorExtractor, theia::DescriptorExtractor>(m, "SiftDescriptorExtractor")
       .def(py::init<>())
       .def(py::init<int, int, int>())
       .def(py::init<theia::SiftParameters>())
