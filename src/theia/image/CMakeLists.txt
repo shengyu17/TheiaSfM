@@ -51,5 +51,5 @@ target_link_libraries(theia_image ${THEIA_IMAGE_LIBRARY_DEPENDENCIES} theia_util
 
 #Add python binding
 
-#pybind11_add_module(pytheia_image python/pybind.cc)
-#target_link_libraries(pytheia_image theia ${THEIA_IMAGE_LIBRARY_DEPENDENCIES} pybind11_headers)
+pybind11_add_module(pytheia_image python/pybind.cc)
+target_link_libraries(pytheia_image theia ${THEIA_IMAGE_LIBRARY_DEPENDENCIES} pybind11_headers)

@@ -72,6 +72,9 @@ class DescriptorExtractor {
       std::vector<Keypoint>* keypoints,
       std::vector<Eigen::VectorXf>* descriptors);
 
+  std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> ComputeDescriptorsWrapper(const FloatImage& image);
+
+
   // Detects keypoints using the default method for the given descriptor. This
   // can be more efficient (e.g., with SIFT) because there is some overhead
   // required for creating the keypoint and descriptor objects.

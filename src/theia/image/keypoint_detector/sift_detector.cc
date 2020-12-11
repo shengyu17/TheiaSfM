@@ -49,6 +49,12 @@ SiftDetector::~SiftDetector() {
     vl_sift_delete(sift_filter_);
 }
 
+std::tuple<bool, std::vector<Keypoint>> SiftDetector::DetectKeypointsWrapper(const FloatImage& image){
+    std::vector<Keypoint> keypoints;
+    const bool success = DetectKeypoints(image, &keypoints);
+    return std::make_tuple(success, keypoints);
+}
+
 bool SiftDetector::DetectKeypoints(const FloatImage& image,
                                    std::vector<Keypoint>* keypoints) {
   // If the filter has been set, but is not usable for the input image (i.e. the

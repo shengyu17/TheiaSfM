@@ -41,6 +41,13 @@
 
 namespace theia {
 
+std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> DescriptorExtractor::ComputeDescriptorsWrapper(const FloatImage& image){
+    std::vector<Keypoint> keypoints;
+    std::vector<Eigen::VectorXf> descriptors;
+    const bool success = ComputeDescriptors(image, &keypoints, &descriptors);
+    return std::make_tuple(success, keypoints, descriptors);
+}
+
 // Compute the descriptor for multiple keypoints in a given image.
 bool DescriptorExtractor::ComputeDescriptors(
     const FloatImage& image,

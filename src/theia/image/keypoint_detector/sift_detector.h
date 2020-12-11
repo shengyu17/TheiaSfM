@@ -67,6 +67,9 @@ class SiftDetector : public KeypointDetector {
   // Given an image, detect keypoints using the sift descriptor.
   bool DetectKeypoints(const FloatImage& image,
                        std::vector<Keypoint>* keypoints);
+
+  std::tuple<bool, std::vector<Keypoint>> DetectKeypointsWrapper(const FloatImage& image);
+
  private:
   const SiftParameters sift_params_;
   VlSiftFilt* sift_filter_;

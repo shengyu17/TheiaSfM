@@ -64,12 +64,17 @@ class AkazeDescriptorExtractor : public DescriptorExtractor {
   bool ComputeDescriptor(const FloatImage& image,
                          const Keypoint& keypoint,
                          Eigen::VectorXf* descriptor);
+  std::tuple<bool, Eigen::VectorXf> ComputeDescriptorWrapper(const FloatImage& image,
+                                                             const Keypoint& keypoint);
 
   // Detect keypoints using the Akaze keypoint detector and extracts them at the
   // same time.
   bool DetectAndExtractDescriptors(const FloatImage& image,
                                    std::vector<Keypoint>* keypoints,
                                    std::vector<Eigen::VectorXf>* descriptors);
+  std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> DetectAndExtractDescriptorsWrapper(const FloatImage& image);
+
+
 
  private:
   const AkazeParameters akaze_params_;

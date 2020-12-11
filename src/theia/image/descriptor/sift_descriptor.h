@@ -65,17 +65,23 @@ class SiftDescriptorExtractor : public DescriptorExtractor {
   bool ComputeDescriptor(const FloatImage& image,
                          const Keypoint& keypoint,
                          Eigen::VectorXf* descriptor);
+  std::tuple<bool, Eigen::VectorXf> ComputeDescriptorWrapper(const FloatImage& image,
+                                                             const Keypoint& keypoint);
 
   // Compute multiple descriptors for keypoints from a single image.
   bool ComputeDescriptors(const FloatImage& image,
                           std::vector<Keypoint>* keypoints,
                           std::vector<Eigen::VectorXf>* descriptors);
+  std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> ComputeDescriptorsWrapper(const FloatImage& image);
+
 
   // Detect keypoints using the Sift keypoint detector and extracts them at the
   // same time.
   bool DetectAndExtractDescriptors(const FloatImage& image,
                                    std::vector<Keypoint>* keypoints,
                                    std::vector<Eigen::VectorXf>* descriptors);
+  std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> DetectAndExtractDescriptorsWrapper(const FloatImage& image);
+
 
   // This method is only public so that we can easily test it.
   static void ConvertToRootSift(Eigen::VectorXf* descriptor);

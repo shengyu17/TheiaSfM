@@ -42,6 +42,7 @@
 #include "theia/sfm/transformation/transformation_wrapper.h"
 #include "theia/sfm/transformation/align_point_clouds.h"
 #include "theia/sfm/transformation/gdls_similarity_transform.h"
+#include "theia/sfm/transformation/align_reconstructions.h"
 
 #include "theia/sfm/camera/camera.h"
 #include "theia/sfm/camera/camera_wrapper.h"
@@ -57,6 +58,7 @@
 #include "theia/sfm/reconstruction.h"
 #include "theia/sfm/twoview_info.h"
 #include "theia/sfm/view_graph/view_graph.h"
+#include "theia/sfm/gps_converter.h"
 
 // for overloaded function in CameraInstrinsicsModel
 template <typename... Args>
@@ -341,6 +343,8 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("AlignPointCloudsUmeyamaWithWeights", theia::AlignPointCloudsUmeyamaWithWeightsWrapper);
   m.def("GdlsSimilarityTransform" ,theia::GdlsSimilarityTransformWrapper);
   m.def("AlignRotations", theia::AlignRotationsWrapper);
+  m.def("AlignReconstructions", theia::AlignReconstructions);
+  m.def("AlignReconstructionsRobust", theia::AlignReconstructionsRobust);
 
 
 
@@ -461,6 +465,13 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     //.def("ExtractSubgraph", &theia::ViewGraph::ExtractSubgraph)
     //.def("GetLargestConnectedComponentIds", &theia::ViewGraph::GetLargestConnectedComponentIds)
 
+  ;
+
+  // GPS converter
+  py::class_<theia::GPSConverter>(m, "GPSConverter")
+    .def(py::init<>())
+    .def_static("ECEFToLLA", theia::GPSConverter::ECEFToLLA)
+    .def_static("LLAToECEF", theia::GPSConverter::LLAToECEF)
   ;
 
 

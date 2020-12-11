@@ -45,6 +45,14 @@
 #include "theia/image/keypoint_detector/keypoint.h"
 
 namespace theia {
+
+std::tuple<bool, Eigen::VectorXf> AkazeDescriptorExtractor::ComputeDescriptorWrapper(const FloatImage& image,
+                                                           const Keypoint& keypoint){
+    Eigen::VectorXf descriptor;
+    const bool success = ComputeDescriptor(image, keypoint, &descriptor);
+    return std::make_tuple(success, descriptor);
+}
+
 bool AkazeDescriptorExtractor::ComputeDescriptor(const FloatImage& image,
                                                  const Keypoint& keypoint,
                                                  Eigen::VectorXf* descriptor) {
@@ -53,6 +61,13 @@ bool AkazeDescriptorExtractor::ComputeDescriptor(const FloatImage& image,
                 "Please use "
                 "AkazeDescriptorExtractor::DetectAndExtractDescriptors() "
                 "instead.";
+}
+
+std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> AkazeDescriptorExtractor::DetectAndExtractDescriptorsWrapper(const FloatImage& image){
+    std::vector<Keypoint> keypoints;
+    std::vector<Eigen::VectorXf> descriptors;
+    const bool success = DetectAndExtractDescriptors(image, &keypoints, &descriptors);
+    return std::make_tuple(success, keypoints, descriptors);
 }
 
 bool AkazeDescriptorExtractor::DetectAndExtractDescriptors(

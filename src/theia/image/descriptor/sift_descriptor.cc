@@ -88,6 +88,14 @@ SiftDescriptorExtractor::SiftDescriptorExtractor()
 
 SiftDescriptorExtractor::~SiftDescriptorExtractor() {}
 
+std::tuple<bool, Eigen::VectorXf> SiftDescriptorExtractor::ComputeDescriptorWrapper(const FloatImage& image,
+                                                           const Keypoint& keypoint){
+    Eigen::VectorXf descriptor;
+    const bool success = ComputeDescriptor(image, keypoint, &descriptor);
+    return std::make_tuple(success, descriptor);
+}
+
+
 bool SiftDescriptorExtractor::ComputeDescriptor(const FloatImage& image,
                                                 const Keypoint& keypoint,
                                                 Eigen::VectorXf* descriptor) {
@@ -146,6 +154,14 @@ bool SiftDescriptorExtractor::ComputeDescriptor(const FloatImage& image,
   }
   return true;
 }
+
+std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> SiftDescriptorExtractor::ComputeDescriptorsWrapper(const FloatImage& image){
+    std::vector<Keypoint> keypoints;
+    std::vector<Eigen::VectorXf> descriptors;
+    const bool success = ComputeDescriptors(image, &keypoints, &descriptors);
+    return std::make_tuple(success, keypoints, descriptors);
+}
+
 
 bool SiftDescriptorExtractor::ComputeDescriptors(
     const FloatImage& image,
@@ -212,6 +228,14 @@ bool SiftDescriptorExtractor::ComputeDescriptors(
 
   return true;
 }
+
+std::tuple<bool, std::vector<Keypoint>, std::vector<Eigen::VectorXf>> SiftDescriptorExtractor::DetectAndExtractDescriptorsWrapper(const FloatImage& image){
+    std::vector<Keypoint> keypoints;
+    std::vector<Eigen::VectorXf> descriptors;
+    const bool success = DetectAndExtractDescriptors(image, &keypoints, &descriptors);
+    return std::make_tuple(success, keypoints, descriptors);
+}
+
 
 bool SiftDescriptorExtractor::DetectAndExtractDescriptors(
     const FloatImage& image,
