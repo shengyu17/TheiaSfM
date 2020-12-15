@@ -1,51 +1,123 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
 
-# Add headers
-file(GLOB_RECURSE THEIA_SOLVERS_HDRS *.h)
+#include <vector>
+#include <iostream>
+#include <Eigen/Core>
+#include <pybind11/numpy.h>
 
-
-# Add sources
-set(THEIA_SOLVERS_SRC
-  exhaustive_sampler.cc
-  prosac_sampler.cc
-  random_sampler.cc
-  )
-
-set(THEIA_SOLVERS_LIBRARY_DEPENDENCIES
-  ${CERES_LIBRARIES}
-  ${GFLAGS_LIBRARIES}
-  ${GLOG_LIBRARIES}
-  ${OPENIMAGEIO_LIBRARIES}
-  ${ROCKSDB_LIBRARIES}
-  akaze
-  flann_cpp
-  statx
-  stlplus3
-  vlfeat
-  visual_sfm
-)
-
-set(THEIA_SOLVERS_LIBRARY_SOURCE
-  ${THEIA_SOLVERS_SRC}
-  ${THEIA_SOLVERS_HDRS})
-
-add_library(theia_solvers ${THEIA_SOLVERS_LIBRARY_SOURCE})
-
-set_target_properties(theia_solvers PROPERTIES
-  VERSION ${THEIA_VERSION}
-  SOVERSION ${THEIA_VERSION_MAJOR}
-  )
-
-target_link_libraries(theia_solvers ${THEIA_SOLVERS_LIBRARY_DEPENDENCIES})
-
-#install(TARGETS theia
-#  EXPORT  TheiaExport
-#  RUNTIME DESTINATION bin
-#  LIBRARY DESTINATION lib${LIB_SUFFIX}
-#  ARCHIVE DESTINATION lib${LIB_SUFFIX})
+#include "theia/solvers/sampler.h"
+#include "theia/solvers/prosac.h"
+#include "theia/solvers/prosac_sampler.h"
+#include "theia/solvers/exhaustive_sampler.h"
+#include "theia/util/random.h"
+#include "theia/solvers/sample_consensus_estimator.h"
+#include "theia/solvers/quality_measurement.h"
+#include "theia/solvers/random_sampler.h"
+#include "theia/solvers/lmed.h"
+#include "theia/solvers/lmed_quality_measurement.h"
+#include "theia/solvers/mle_quality_measurement.h"
+#include "theia/solvers/exhaustive_ransac.h"
+#include "theia/solvers/inlier_support.h"
+#include "theia/solvers/evsac.h"
+#include "theia/solvers/evsac_sampler.h"
 
 
+namespace py = pybind11;
 
-#Add python binding
 
-pybind11_add_module(pytheia_solvers python/pybind.cc)
-target_link_libraries(pytheia_solvers theia ${THEIA_SOLVERS_LIBRARY_DEPENDENCIES} pybind11_headers)
+PYBIND11_MODULE(pytheia_solvers, m) {
+
+    //RandomNumberGenerator
+    py::class_<theia::RandomNumberGenerator>(m, "RandomNumberGenerator")
+      .def(py::init<>())
+      .def(py::init<int>())
+      .def("Seed", &theia::RandomNumberGenerator::Seed)
+      .def("RandDouble", &theia::RandomNumberGenerator::RandDouble)
+      .def("RandFloat", &theia::RandomNumberGenerator::RandFloat)
+      .def("RandInt", &theia::RandomNumberGenerator::RandInt)
+      .def("RandGaussian", &theia::RandomNumberGenerator::RandGaussian)
+
+    ;
+
+    //RansacSummary
+    py::class_<theia::RansacSummary>(m, "RansacSummary")
+      .def_readwrite("inliers", &theia::RansacSummary::inliers)
+      .def_readwrite("num_input_data_points", &theia::RansacSummary::num_input_data_points)
+      .def_readwrite("num_iterations", &theia::RansacSummary::num_iterations)
+      .def_readwrite("confidence", &theia::RansacSummary::confidence)
+
+    ;
+
+    py::enum_<theia::FittingMethod>(m, "FittingMethod")
+      .value("MLE", theia::FittingMethod::MLE)
+      .value("QUANTILE_NLS", theia::FittingMethod::QUANTILE_NLS)
+      .export_values()
+    ;
+
+
+    py::class_<theia::Sampler> sampler(m, "Sampler");
+
+    py::class_<theia::ProsacSampler>(m, "ProsacSampler", sampler)
+      .def(py::init<std::shared_ptr<theia::RandomNumberGenerator>, int>())
+      .def("SetSampleNumber", &theia::ProsacSampler::SetSampleNumber)
+      .def("Sample", &theia::ProsacSampler::Sample)
+      .def("Initialize", &theia::ProsacSampler::Initialize)
+
+    ;
+
+    py::class_<theia::ExhaustiveSampler>(m, "ExhaustiveSampler", sampler)
+      .def(py::init<std::shared_ptr<theia::RandomNumberGenerator>, int>())
+      .def("Sample", &theia::ExhaustiveSampler::Sample)
+      .def("Initialize", &theia::ExhaustiveSampler::Initialize)
+
+    ;
+
+    py::class_<theia::RandomSampler>(m, "RandomSampler", sampler)
+      .def(py::init<std::shared_ptr<theia::RandomNumberGenerator>, int>())
+      .def("Sample", &theia::RandomSampler::Sample)
+      .def("Initialize", &theia::RandomSampler::Initialize)
+
+    ;
+
+    // templated subclass
+    /*
+    py::class_<theia::EvsacSampler>(m, "EvsacSampler", sampler)
+      .def(py::init<int, Eigen::MatrixXd, double, theia::FittingMethod>())
+      .def("Initialize", &theia::EvsacSampler::Initialize)
+      .def("Sample", &theia::EvsacSampler::Sample)
+
+    ;*/
+
+    py::class_<theia::QualityMeasurement>(m, "QualityMeasurement")
+
+      .def("Initialize", &theia::QualityMeasurement::Initialize)
+    ;
+
+    py::class_<theia::LmedQualityMeasurement, theia::QualityMeasurement>(m, "LmedQualityMeasurement")
+      .def(py::init<int>())
+      .def("ComputeCost", &theia::LmedQualityMeasurement::ComputeCost)
+    ;
+
+
+    py::class_<theia::MLEQualityMeasurement, theia::QualityMeasurement>(m, "MLEQualityMeasurement")
+      .def(py::init<double>())
+      .def("ComputeCost", &theia::MLEQualityMeasurement::ComputeCost)
+    ;
+
+    py::class_<theia::InlierSupport, theia::QualityMeasurement>(m, "InlierSupport")
+      .def(py::init<double>())
+      .def("ComputeCost", &theia::InlierSupport::ComputeCost)
+    ;
+    /*
+    py::class_<theia::SampleConsensusEstimator>(m, "SampleConsensusEstimator")
+
+      .def("Initialize", &theia::SampleConsensusEstimator::Initialize)
+      .def("Estimate", &theia::SampleConsensusEstimator::Estimate)
+    ;
+    */
+
+
+
+}

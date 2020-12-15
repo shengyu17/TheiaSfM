@@ -47,5 +47,5 @@ target_link_libraries(theia_solvers ${THEIA_SOLVERS_LIBRARY_DEPENDENCIES} theia_
 
 #Add python binding
 
-#pybind11_add_module(pytheia_solvers python/pybind.cc)
-#target_link_libraries(pytheia_solvers theia ${THEIA_SOLVERS_LIBRARY_DEPENDENCIES} pybind11_headers)
+pybind11_add_module(pytheia_solvers python/pybind.cc)
+target_link_libraries(pytheia_solvers theia ${THEIA_SOLVERS_LIBRARY_DEPENDENCIES} pybind11_headers)

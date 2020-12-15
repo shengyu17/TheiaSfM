@@ -5,6 +5,7 @@ list(APPEND THEIA_IO_HDRS "${CMAKE_SOURCE_DIR}/src/theia/alignment/alignment.h")
 
 # Add sources
 set(THEIA_IO_SRC
+  io_wrapper.cc
   bundler_file_reader.cc
   import_nvm_file.cc
   populate_image_sizes.cc
@@ -62,5 +63,5 @@ target_link_libraries(theia_io ${THEIA_IO_LIBRARY_DEPENDENCIES} theia_util theia
 
 #Add python binding
 
-#pybind11_add_module(pytheia_io python/pybind.cc)
-#target_link_libraries(pytheia_io theia ${THEIA_IO_LIBRARY_DEPENDENCIES} pybind11_headers)
+pybind11_add_module(pytheia_io python/pybind.cc)
+target_link_libraries(pytheia_io theia ${THEIA_IO_LIBRARY_DEPENDENCIES} pybind11_headers)
