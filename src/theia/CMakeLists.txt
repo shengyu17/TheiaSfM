@@ -119,6 +119,7 @@ set(THEIA_SRC
   sfm/colorize_reconstruction.cc
   sfm/estimate_track.cc
   sfm/estimate_twoview_info.cc
+  sfm/estimators/estimators_wrapper.cc
   sfm/estimators/estimate_absolute_pose_with_known_orientation.cc
   sfm/estimators/estimate_calibrated_absolute_pose.cc
   sfm/estimators/estimate_dominant_plane_from_points.cc

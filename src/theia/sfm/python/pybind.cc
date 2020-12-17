@@ -78,6 +78,21 @@
 #include "theia/sfm/global_pose_estimation/nonlinear_rotation_estimator.h"
 #include "theia/sfm/global_pose_estimation/global_pose_estimation_wrapper.h"
 
+// reconstruction view track
+#include "theia/sfm/reconstruction_estimator.h"
+#include "theia/sfm/reconstruction_estimator_options.h"
+#include "theia/sfm/similarity_transformation.h"
+#include "theia/sfm/rigid_transformation.h"
+
+// estimator
+#include "theia/sfm/estimators/estimators_wrapper.h"
+#include "theia/sfm/estimators/estimate_calibrated_absolute_pose.h"
+#include "theia/sfm/estimators/estimate_dominant_plane_from_points.h"
+#include "theia/sfm/estimators/estimate_radial_distortion_homography.h"
+#include "theia/sfm/estimators/estimate_relative_pose.h"
+#include "theia/sfm/estimators/estimate_uncalibrated_absolute_pose.h"
+#include "theia/sfm/estimators/estimate_uncalibrated_relative_pose.h"
+
 // for overloaded function in CameraInstrinsicsModel
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
@@ -363,6 +378,100 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("AlignReconstructions", theia::AlignReconstructions);
   m.def("AlignReconstructionsRobust", theia::AlignReconstructionsRobust);
 
+  py::class_<theia::SimilarityTransformation>(m, "SimilarityTransformation")
+    .def(py::init<>())
+    .def_readwrite("rotation", &theia::SimilarityTransformation::rotation)
+    .def_readwrite("translation", &theia::SimilarityTransformation::translation)
+    .def_readwrite("scale", &theia::SimilarityTransformation::scale)
+  ;
+
+  py::class_<theia::RigidTransformation>(m, "RigidTransformation")
+    .def(py::init<>())
+    .def_readwrite("rotation", &theia::RigidTransformation::rotation)
+    .def_readwrite("translation", &theia::RigidTransformation::translation)
+  ;
+
+  // estimator
+
+  py::class_<theia::CameraAndFeatureCorrespondence2D3D>(m, "CameraAndFeatureCorrespondence2D3D")
+    .def(py::init<>())
+    .def_readwrite("camera", &theia::CameraAndFeatureCorrespondence2D3D::camera)
+    .def_readwrite("observation", &theia::CameraAndFeatureCorrespondence2D3D::observation)
+    .def_readwrite("point3d", &theia::CameraAndFeatureCorrespondence2D3D::point3d)
+  ;
+
+  py::class_<theia::FeatureCorrespondence2D3D>(m, "FeatureCorrespondence2D3D")
+    .def(py::init<>())
+    .def_readwrite("feature", &theia::FeatureCorrespondence2D3D::feature)
+    .def_readwrite("world_point", &theia::FeatureCorrespondence2D3D::world_point)
+  ;
+
+  py::class_<theia::CalibratedAbsolutePose>(m, "CalibratedAbsolutePose")
+    .def(py::init<>())
+    .def_readwrite("rotation", &theia::CalibratedAbsolutePose::rotation)
+    .def_readwrite("position", &theia::CalibratedAbsolutePose::position)
+  ;
+
+  py::class_<theia::UncalibratedAbsolutePose>(m, "UncalibratedAbsolutePose")
+    .def(py::init<>())
+    .def_readwrite("rotation", &theia::UncalibratedAbsolutePose::rotation)
+    .def_readwrite("position", &theia::UncalibratedAbsolutePose::position)
+    .def_readwrite("position", &theia::UncalibratedAbsolutePose::focal_length)
+  ;
+
+  py::class_<theia::UncalibratedRelativePose>(m, "UncalibratedRelativePose")
+    .def(py::init<>())
+    .def_readwrite("fundamental_matrix", &theia::UncalibratedRelativePose::fundamental_matrix)
+    .def_readwrite("focal_length1", &theia::UncalibratedRelativePose::focal_length1)
+    .def_readwrite("focal_length2", &theia::UncalibratedRelativePose::focal_length2)
+    .def_readwrite("rotation", &theia::UncalibratedRelativePose::rotation)
+    .def_readwrite("position", &theia::UncalibratedRelativePose::position)
+
+  ;
+
+  py::class_<theia::RelativePose>(m, "RelativePose")
+    .def(py::init<>())
+    .def_readwrite("essential_matrix", &theia::RelativePose::essential_matrix)
+    .def_readwrite("rotation", &theia::RelativePose::rotation)
+    .def_readwrite("position", &theia::RelativePose::position)
+  ;
+
+  py::class_<theia::Plane>(m, "Plane")
+    .def(py::init<>())
+    .def_readwrite("point", &theia::Plane::point)
+    .def_readwrite("unit_normal", &theia::Plane::unit_normal)
+  ;
+
+  py::class_<theia::RadialDistortionFeatureCorrespondence>(m, "RadialDistortionFeatureCorrespondence")
+    .def(py::init<>())
+    .def_readwrite("feature_left", &theia::RadialDistortionFeatureCorrespondence::feature_left)
+    .def_readwrite("feature_right", &theia::RadialDistortionFeatureCorrespondence::feature_right)
+    .def_readwrite("normalized_feature_left", &theia::RadialDistortionFeatureCorrespondence::normalized_feature_left)
+    .def_readwrite("normalized_feature_right", &theia::RadialDistortionFeatureCorrespondence::normalized_feature_right)
+    .def_readwrite("focal_length_estimate_left", &theia::RadialDistortionFeatureCorrespondence::focal_length_estimate_left)
+    .def_readwrite("focal_length_estimate_right", &theia::RadialDistortionFeatureCorrespondence::focal_length_estimate_right)
+    .def_readwrite("min_radial_distortion", &theia::RadialDistortionFeatureCorrespondence::min_radial_distortion)
+    .def_readwrite("max_radial_distortion", &theia::RadialDistortionFeatureCorrespondence::max_radial_distortion)
+
+  ;
+
+  m.def("EstimateAbsolutePoseWithKnownOrientation", theia::EstimateAbsolutePoseWithKnownOrientationWrapper);
+  m.def("EstimateCalibratedAbsolutePose", theia::EstimateCalibratedAbsolutePoseWrapper);
+  m.def("EstimateDominantPlaneFromPoints", theia::EstimateDominantPlaneFromPointsWrapper);
+  m.def("EstimateEssentialMatrix", theia::EstimateEssentialMatrixWrapper);
+  m.def("EstimateFundamentalMatrix", theia::EstimateFundamentalMatrixWrapper);
+  m.def("EstimateHomography", theia::EstimateHomographyWrapper);
+  m.def("EstimateRadialHomographyMatrix", theia::EstimateRadialHomographyMatrixWrapper);
+  m.def("EstimateRelativePose", theia::EstimateRelativePoseWrapper);
+  m.def("EstimateRelativePoseWithKnownOrientation", theia::EstimateRelativePoseWithKnownOrientationWrapper);
+  m.def("EstimateRigidTransformation2D3D", theia::EstimateRigidTransformation2D3DWrapper);
+  m.def("EstimateRigidTransformation2D3DNormalized", theia::EstimateRigidTransformation2D3DNormalizedWrapper);
+  m.def("EstimateTriangulation", theia::EstimateTriangulationWrapper);
+  m.def("EstimateUncalibratedAbsolutePose", theia::EstimateUncalibratedAbsolutePoseWrapper);
+  m.def("EstimateUncalibratedRelativePose", theia::EstimateUncalibratedRelativePoseWrapper);
+
+
+
 
 
   //triangulation
@@ -411,6 +520,71 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
+  // Reconstruction Options
+
+  py::enum_<theia::ReconstructionEstimatorType>(m, "ReconstructionEstimatorType")
+    .value("GLOBAL", theia::ReconstructionEstimatorType::GLOBAL)
+    .value("INCREMENTAL", theia::ReconstructionEstimatorType::INCREMENTAL)
+    .value("HYBRID", theia::ReconstructionEstimatorType::HYBRID)
+    .export_values()
+  ;
+
+  py::enum_<theia::GlobalPositionEstimatorType>(m, "GlobalPositionEstimatorType")
+    .value("NONLINEAR", theia::GlobalPositionEstimatorType::NONLINEAR)
+    .value("LINEAR_TRIPLET", theia::GlobalPositionEstimatorType::LINEAR_TRIPLET)
+    .value("LEAST_UNSQUARED_DEVIATION", theia::GlobalPositionEstimatorType::LEAST_UNSQUARED_DEVIATION)
+    .export_values()
+  ;
+
+  py::enum_<theia::GlobalRotationEstimatorType>(m, "GlobalRotationEstimatorType")
+    .value("ROBUST_L1L2", theia::GlobalRotationEstimatorType::ROBUST_L1L2)
+    .value("NONLINEAR", theia::GlobalRotationEstimatorType::NONLINEAR)
+    .value("LINEAR", theia::GlobalRotationEstimatorType::LINEAR)
+    .export_values()
+  ;
+
+  // TwoViewInfo
+  py::class_<theia::ReconstructionEstimatorOptions>(m, "ReconstructionEstimatorOptions")
+    .def(py::init<>())
+    .def_readwrite("reconstruction_estimator_type", &theia::ReconstructionEstimatorOptions::reconstruction_estimator_type)
+    .def_readwrite("global_position_estimator_type", &theia::ReconstructionEstimatorOptions::global_position_estimator_type)
+    .def_readwrite("global_rotation_estimator_type", &theia::ReconstructionEstimatorOptions::global_rotation_estimator_type)
+    .def_readwrite("num_threads", &theia::ReconstructionEstimatorOptions::num_threads)
+    .def_readwrite("max_reprojection_error_in_pixels", &theia::ReconstructionEstimatorOptions::max_reprojection_error_in_pixels)
+    .def_readwrite("min_num_two_view_inliers", &theia::ReconstructionEstimatorOptions::min_num_two_view_inliers)
+    .def_readwrite("ransac_confidence", &theia::ReconstructionEstimatorOptions::ransac_confidence)
+    .def_readwrite("ransac_min_iterations", &theia::ReconstructionEstimatorOptions::ransac_min_iterations)
+    .def_readwrite("ransac_max_iterations", &theia::ReconstructionEstimatorOptions::ransac_max_iterations)
+    .def_readwrite("ransac_use_mle", &theia::ReconstructionEstimatorOptions::ransac_use_mle)
+    .def_readwrite("rotation_filtering_max_difference_degrees", &theia::ReconstructionEstimatorOptions::rotation_filtering_max_difference_degrees)
+    .def_readwrite("refine_relative_translations_after_rotation_estimation", &theia::ReconstructionEstimatorOptions::refine_relative_translations_after_rotation_estimation)
+    .def_readwrite("extract_maximal_rigid_subgraph", &theia::ReconstructionEstimatorOptions::extract_maximal_rigid_subgraph)
+    .def_readwrite("filter_relative_translations_with_1dsfm", &theia::ReconstructionEstimatorOptions::filter_relative_translations_with_1dsfm)
+    .def_readwrite("translation_filtering_num_iterations", &theia::ReconstructionEstimatorOptions::translation_filtering_num_iterations)
+    .def_readwrite("translation_filtering_projection_tolerance", &theia::ReconstructionEstimatorOptions::translation_filtering_projection_tolerance)
+    .def_readwrite("rotation_estimation_robust_loss_scale", &theia::ReconstructionEstimatorOptions::rotation_estimation_robust_loss_scale)
+    .def_readwrite("nonlinear_position_estimator_options", &theia::ReconstructionEstimatorOptions::nonlinear_position_estimator_options)
+    .def_readwrite("linear_triplet_position_estimator_options", &theia::ReconstructionEstimatorOptions::linear_triplet_position_estimator_options)
+    .def_readwrite("least_unsquared_deviation_position_estimator_options", &theia::ReconstructionEstimatorOptions::least_unsquared_deviation_position_estimator_options)
+    .def_readwrite("refine_camera_positions_and_points_after_position_estimation", &theia::ReconstructionEstimatorOptions::refine_camera_positions_and_points_after_position_estimation)
+    .def_readwrite("multiple_view_localization_ratio", &theia::ReconstructionEstimatorOptions::multiple_view_localization_ratio)
+    .def_readwrite("absolute_pose_reprojection_error_threshold", &theia::ReconstructionEstimatorOptions::absolute_pose_reprojection_error_threshold)
+    .def_readwrite("min_num_absolute_pose_inliers", &theia::ReconstructionEstimatorOptions::min_num_absolute_pose_inliers)
+    .def_readwrite("full_bundle_adjustment_growth_percent", &theia::ReconstructionEstimatorOptions::full_bundle_adjustment_growth_percent)
+    .def_readwrite("partial_bundle_adjustment_num_views", &theia::ReconstructionEstimatorOptions::partial_bundle_adjustment_num_views)
+    .def_readwrite("relative_position_estimation_max_sampson_error_pixels", &theia::ReconstructionEstimatorOptions::relative_position_estimation_max_sampson_error_pixels)
+    .def_readwrite("min_triangulation_angle_degrees", &theia::ReconstructionEstimatorOptions::min_triangulation_angle_degrees)
+    .def_readwrite("bundle_adjust_tracks", &theia::ReconstructionEstimatorOptions::bundle_adjust_tracks)
+    .def_readwrite("num_retriangulation_iterations", &theia::ReconstructionEstimatorOptions::num_retriangulation_iterations)
+    .def_readwrite("bundle_adjustment_loss_function_type", &theia::ReconstructionEstimatorOptions::bundle_adjustment_loss_function_type)
+    .def_readwrite("bundle_adjustment_robust_loss_width", &theia::ReconstructionEstimatorOptions::bundle_adjustment_robust_loss_width)
+    .def_readwrite("min_cameras_for_iterative_solver", &theia::ReconstructionEstimatorOptions::min_cameras_for_iterative_solver)
+    .def_readwrite("intrinsics_to_optimize", &theia::ReconstructionEstimatorOptions::intrinsics_to_optimize)
+    .def_readwrite("subsample_tracks_for_bundle_adjustment", &theia::ReconstructionEstimatorOptions::subsample_tracks_for_bundle_adjustment)
+    .def_readwrite("track_subset_selection_long_track_length_threshold", &theia::ReconstructionEstimatorOptions::track_subset_selection_long_track_length_threshold)
+    .def_readwrite("track_selection_image_grid_cell_size_pixels", &theia::ReconstructionEstimatorOptions::track_selection_image_grid_cell_size_pixels)
+    .def_readwrite("min_num_optimized_tracks_per_view", &theia::ReconstructionEstimatorOptions::min_num_optimized_tracks_per_view)
+  ;
 
   // Reconstruction class
   py::class_<theia::Reconstruction>(m, "Reconstruction")
