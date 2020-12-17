@@ -60,6 +60,24 @@
 #include "theia/sfm/view_graph/view_graph.h"
 #include "theia/sfm/gps_converter.h"
 
+#include "theia/sfm/bundle_adjustment/bundle_adjustment.h"
+#include "theia/sfm/bundle_adjustment/create_loss_function.h"
+#include "theia/sfm/bundle_adjustment/bundle_adjustment_wrapper.h"
+#include "theia/sfm/bundle_adjustment/bundle_adjuster.h"
+#include "theia/sfm/bundle_adjustment/bundle_adjust_two_views.h"
+#include "theia/sfm/bundle_adjustment/optimize_relative_position_with_known_rotation.h"
+
+
+#include "theia/sfm/global_pose_estimation/position_estimator.h"
+#include "theia/sfm/global_pose_estimation/rotation_estimator.h"
+#include "theia/sfm/global_pose_estimation/robust_rotation_estimator.h"
+#include "theia/sfm/global_pose_estimation/least_unsquared_deviation_position_estimator.h"
+#include "theia/sfm/global_pose_estimation/linear_position_estimator.h"
+#include "theia/sfm/global_pose_estimation/linear_rotation_estimator.h"
+#include "theia/sfm/global_pose_estimation/nonlinear_position_estimator.h"
+#include "theia/sfm/global_pose_estimation/nonlinear_rotation_estimator.h"
+#include "theia/sfm/global_pose_estimation/global_pose_estimation_wrapper.h"
+
 // for overloaded function in CameraInstrinsicsModel
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
@@ -466,12 +484,162 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
+
+
+
   // GPS converter
   py::class_<theia::GPSConverter>(m, "GPSConverter")
     .def(py::init<>())
     .def_static("ECEFToLLA", theia::GPSConverter::ECEFToLLA)
     .def_static("LLAToECEF", theia::GPSConverter::LLAToECEF)
   ;
+
+  // Bundle Adjustment
+  py::enum_<theia::OptimizeIntrinsicsType>(m, "OptimizeIntrinsicsType")
+    .value("NONE", theia::OptimizeIntrinsicsType::NONE)
+    .value("FOCAL_LENGTH", theia::OptimizeIntrinsicsType::FOCAL_LENGTH)
+    .value("ASPECT_RATIO", theia::OptimizeIntrinsicsType::ASPECT_RATIO)
+    .value("SKEW", theia::OptimizeIntrinsicsType::SKEW)
+    .value("PRINCIPAL_POINTS", theia::OptimizeIntrinsicsType::PRINCIPAL_POINTS)
+    .value("RADIAL_DISTORTION", theia::OptimizeIntrinsicsType::RADIAL_DISTORTION)
+    .value("TANGENTIAL_DISTORTION", theia::OptimizeIntrinsicsType::TANGENTIAL_DISTORTION)
+    .value("ALL", theia::OptimizeIntrinsicsType::ALL)
+    .export_values()
+  ;
+
+  py::enum_<theia::LossFunctionType>(m, "LossFunctionType")
+    .value("TRIVIAL", theia::LossFunctionType::TRIVIAL)
+    .value("HUBER", theia::LossFunctionType::HUBER)
+    .value("SOFTLONE", theia::LossFunctionType::SOFTLONE)
+    .value("CAUCHY", theia::LossFunctionType::CAUCHY)
+    .value("ARCTAN", theia::LossFunctionType::ARCTAN)
+    .value("TUKEY", theia::LossFunctionType::TUKEY)
+    .export_values()
+  ;
+
+  py::class_<theia::BundleAdjustmentOptions>(m, "BundleAdjustmentOptions")
+    .def(py::init<>())
+    .def_readwrite("loss_function_type", &theia::BundleAdjustmentOptions::loss_function_type)
+    .def_readwrite("robust_loss_width", &theia::BundleAdjustmentOptions::robust_loss_width)
+    .def_readwrite("verbose", &theia::BundleAdjustmentOptions::verbose)
+    .def_readwrite("constant_camera_orientation", &theia::BundleAdjustmentOptions::constant_camera_orientation)
+    .def_readwrite("constant_camera_position", &theia::BundleAdjustmentOptions::constant_camera_position)
+    .def_readwrite("intrinsics_to_optimize", &theia::BundleAdjustmentOptions::intrinsics_to_optimize)
+    .def_readwrite("num_threads", &theia::BundleAdjustmentOptions::num_threads)
+    .def_readwrite("max_num_iterations", &theia::BundleAdjustmentOptions::max_num_iterations)
+    .def_readwrite("max_solver_time_in_seconds", &theia::BundleAdjustmentOptions::max_solver_time_in_seconds)
+    .def_readwrite("use_inner_iterations", &theia::BundleAdjustmentOptions::use_inner_iterations)
+    .def_readwrite("function_tolerance", &theia::BundleAdjustmentOptions::function_tolerance)
+    .def_readwrite("gradient_tolerance", &theia::BundleAdjustmentOptions::gradient_tolerance)
+    .def_readwrite("parameter_tolerance", &theia::BundleAdjustmentOptions::parameter_tolerance)
+    .def_readwrite("max_trust_region_radius", &theia::BundleAdjustmentOptions::max_trust_region_radius)
+  ;
+
+  //TwoViewBundleAdjustmentOptions
+  py::class_<theia::TwoViewBundleAdjustmentOptions>(m, "TwoViewBundleAdjustmentOptions")
+    .def(py::init<>())
+    .def_readwrite("ba_options", &theia::TwoViewBundleAdjustmentOptions::ba_options)
+    .def_readwrite("constant_camera1_intrinsics", &theia::TwoViewBundleAdjustmentOptions::constant_camera1_intrinsics)
+    .def_readwrite("constant_camera2_intrinsics", &theia::TwoViewBundleAdjustmentOptions::constant_camera2_intrinsics)
+  ;
+
+  py::class_<theia::BundleAdjustmentSummary>(m, "BundleAdjustmentSummary")
+    .def(py::init<>())
+    .def_readwrite("success", &theia::BundleAdjustmentSummary::success)
+    .def_readwrite("initial_cost", &theia::BundleAdjustmentSummary::initial_cost)
+    .def_readwrite("final_cost", &theia::BundleAdjustmentSummary::final_cost)
+    .def_readwrite("setup_time_in_seconds", &theia::BundleAdjustmentSummary::setup_time_in_seconds)
+    .def_readwrite("solve_time_in_seconds", &theia::BundleAdjustmentSummary::solve_time_in_seconds)
+  ;
+
+  m.def("BundleAdjustPartialReconstruction", theia::BundleAdjustPartialReconstructionWrapper);
+  m.def("BundleAdjustReconstruction", theia::BundleAdjustReconstructionWrapper);
+  m.def("BundleAdjustView", theia::BundleAdjustViewWrapper);
+  m.def("BundleAdjustTrack", theia::BundleAdjustTrackWrapper);
+
+  m.def("BundleAdjustTwoViews", theia::BundleAdjustTwoViewsWrapper);
+  m.def("BundleAdjustTwoViewsAngular", theia::BundleAdjustTwoViewsAngularWrapper);
+  m.def("OptimizeRelativePositionWithKnownRotation", theia::OptimizeRelativePositionWithKnownRotationWrapper);
+
+  // Bundle Adjuster
+  py::class_<theia::BundleAdjuster>(m, "BundleAdjuster")
+    // constructor uses pointer of an object as input
+    //.def(py::init<theia::BundleAdjustmentOptions, theia::Reconstruction>())
+
+    .def("AddView", &theia::BundleAdjuster::AddView)
+    .def("AddTrack", &theia::BundleAdjuster::AddTrack)
+    .def("Optimize", &theia::BundleAdjuster::Optimize)
+    //.def("SetCameraExtrinsicsParameterization", &theia::BundleAdjuster::SetCameraExtrinsicsParameterization)
+    //.def("SetCameraIntrinsicsParameterization", &theia::BundleAdjuster::SetCameraIntrinsicsParameterization)
+    //.def("SetCameraExtrinsicsConstant", &theia::BundleAdjuster::SetCameraExtrinsicsConstant)
+    //.def("SetCameraPositionConstant", &theia::BundleAdjuster::SetCameraPositionConstant)
+    //.def("SetCameraOrientationConstant", &theia::BundleAdjuster::SetCameraOrientationConstant)
+    //.def("SetTrackConstant", &theia::BundleAdjuster::SetTrackConstant)
+    //.def("SetTrackVariable", &theia::BundleAdjuster::SetTrackVariable)
+    //.def("SetCameraSchurGroups", &theia::BundleAdjuster::SetCameraSchurGroups)
+    //.def("SetTrackSchurGroup", &theia::BundleAdjuster::SetTrackSchurGroup)
+    //.def("AddReprojectionErrorResidual", &theia::BundleAdjuster::AddReprojectionErrorResidual)
+  ;
+
+
+  // Global SfM
+  m.def("ComputeTripletBaselineRatios", theia::ComputeTripletBaselineRatiosWrapper);
+
+  // Position Estimator
+  py::class_<theia::PositionEstimator>(m, "PositionEstimator")
+  ;
+
+  py::class_<theia::LinearPositionEstimator, theia::PositionEstimator>(m, "LinearPositionEstimator")
+    .def(py::init<theia::LinearPositionEstimator::Options, theia::Reconstruction>())
+    .def("EstimatePositions", &theia::LinearPositionEstimator::EstimatePositions)
+
+  ;
+
+  py::class_<theia::NonlinearPositionEstimator, theia::PositionEstimator>(m, "NonlinearPositionEstimator")
+    .def(py::init<theia::NonlinearPositionEstimator::Options, theia::Reconstruction>())
+    .def("EstimatePositions", &theia::NonlinearPositionEstimator::EstimatePositions)
+
+  ;
+
+  py::class_<theia::LeastUnsquaredDeviationPositionEstimator, theia::PositionEstimator>(m, "LeastUnsquaredDeviationPositionEstimator")
+    .def(py::init<theia::LeastUnsquaredDeviationPositionEstimator::Options>())
+    .def("EstimatePositions", &theia::LeastUnsquaredDeviationPositionEstimator::EstimatePositions)
+
+  ;
+
+
+  py::class_<theia::RotationEstimator>(m, "RotationEstimator")
+  ;
+
+  py::class_<theia::RobustRotationEstimator, theia::RotationEstimator>(m, "RobustRotationEstimator")
+    .def(py::init<theia::RobustRotationEstimator::Options>())
+    //.def("EstimateRotations", &theia::RobustRotationEstimator::EstimateRotations)
+    .def("AddRelativeRotationConstraint", &theia::RobustRotationEstimator::AddRelativeRotationConstraint)
+    //.def("EstimateRotations", &theia::RobustRotationEstimator::EstimateRotations)
+
+  ;
+
+  py::class_<theia::NonlinearRotationEstimator, theia::RotationEstimator>(m, "NonlinearRotationEstimator")
+    .def(py::init<>())
+    .def(py::init<double>())
+    .def("EstimateRotations", &theia::NonlinearRotationEstimator::EstimateRotations)
+
+  ;
+
+  py::class_<theia::LinearRotationEstimator, theia::RotationEstimator>(m, "LinearRotationEstimator")
+    .def(py::init<>())
+    .def("AddRelativeRotationConstraint", &theia::LinearRotationEstimator::AddRelativeRotationConstraint)
+    //.def("EstimateRotations", &theia::RobustRotationEstimator::EstimateRotations)
+    //.def("EstimateRotations", &theia::RobustRotationEstimator::EstimateRotations)
+
+  ;
+
+
+
+
+
+
+
 
 
 

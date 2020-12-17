@@ -4,6 +4,7 @@ file(GLOB_RECURSE THEIA_SFM_HDRS *.h)
 list(APPEND THEIA_IO_HDRS "${CMAKE_SOURCE_DIR}/src/theia/alignment/alignment.h")
 # Add sources
 set(THEIA_SFM_SRC
+  bundle_adjustment/bundle_adjustment_wrapper.cc
   bundle_adjustment/bundle_adjust_two_views.cc
   bundle_adjustment/bundle_adjuster.cc
   bundle_adjustment/bundle_adjustment.cc
@@ -44,6 +45,7 @@ set(THEIA_SFM_SRC
   filter_view_pairs_from_relative_translation.cc
   find_common_tracks_in_views.cc
   find_common_views_by_name.cc
+  global_pose_estimation/global_pose_estimation_wrapper.cc
   global_pose_estimation/compute_triplet_baseline_ratios.cc
   global_pose_estimation/least_unsquared_deviation_position_estimator.cc
   global_pose_estimation/linear_position_estimator.cc

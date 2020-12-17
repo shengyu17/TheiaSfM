@@ -54,5 +54,5 @@ target_link_libraries(theia_matching ${THEIA_MATCHING_LIBRARY_DEPENDENCIES} thei
 
 #Add python binding
 
-#pybind11_add_module(pytheia_matching python/pybind.cc)
-#target_link_libraries(pytheia_matching theia ${THEIA_MATCHING_LIBRARY_DEPENDENCIES} pybind11_headers)
+pybind11_add_module(pytheia_matching python/pybind.cc)
+target_link_libraries(pytheia_matching theia ${THEIA_MATCHING_LIBRARY_DEPENDENCIES} pybind11_headers)

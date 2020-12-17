@@ -101,6 +101,7 @@ set(THEIA_SRC
   math/probability/sequential_probability_ratio.cc
   math/qp_solver.cc
   math/rotation.cc
+  sfm/bundle_adjustment/bundle_adjustment_wrapper.cc
   sfm/bundle_adjustment/bundle_adjust_two_views.cc
   sfm/bundle_adjustment/bundle_adjuster.cc
   sfm/bundle_adjustment/bundle_adjustment.cc
@@ -141,6 +142,7 @@ set(THEIA_SRC
   sfm/filter_view_pairs_from_relative_translation.cc
   sfm/find_common_tracks_in_views.cc
   sfm/find_common_views_by_name.cc
+  sfm/global_pose_estimation/global_pose_estimation_wrapper.cc
   sfm/global_pose_estimation/compute_triplet_baseline_ratios.cc
   sfm/global_pose_estimation/least_unsquared_deviation_position_estimator.cc
   sfm/global_pose_estimation/linear_position_estimator.cc
