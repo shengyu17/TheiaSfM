@@ -4,6 +4,7 @@ file(GLOB_RECURSE THEIA_SFM_HDRS *.h)
 list(APPEND THEIA_IO_HDRS "${CMAKE_SOURCE_DIR}/src/theia/alignment/alignment.h")
 # Add sources
 set(THEIA_SFM_SRC
+  sfm_wrapper.cc
   bundle_adjustment/bundle_adjustment_wrapper.cc
   bundle_adjustment/bundle_adjust_two_views.cc
   bundle_adjustment/bundle_adjuster.cc

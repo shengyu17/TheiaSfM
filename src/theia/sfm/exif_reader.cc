@@ -118,6 +118,13 @@ void ExifReader::LoadSensorWidthDatabase() {
   }
 }
 
+std::tuple<bool, CameraIntrinsicsPrior> ExifReader::ExtractEXIFMetadataWrapper(
+        const std::string& image_file){
+    CameraIntrinsicsPrior camera_intrinsics_prior;
+    const bool success = ExtractEXIFMetadata(image_file, &camera_intrinsics_prior);
+    return std::make_tuple(success, camera_intrinsics_prior);
+}
+
 bool ExifReader::ExtractEXIFMetadata(
     const std::string& image_file,
     CameraIntrinsicsPrior* camera_intrinsics_prior) const {

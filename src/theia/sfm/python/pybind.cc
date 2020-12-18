@@ -58,7 +58,7 @@
 #include "theia/sfm/reconstruction.h"
 #include "theia/sfm/twoview_info.h"
 #include "theia/sfm/view_graph/view_graph.h"
-#include "theia/sfm/gps_converter.h"
+
 
 #include "theia/sfm/bundle_adjustment/bundle_adjustment.h"
 #include "theia/sfm/bundle_adjustment/create_loss_function.h"
@@ -92,6 +92,30 @@
 #include "theia/sfm/estimators/estimate_relative_pose.h"
 #include "theia/sfm/estimators/estimate_uncalibrated_absolute_pose.h"
 #include "theia/sfm/estimators/estimate_uncalibrated_relative_pose.h"
+#include "theia/sfm/create_and_initialize_ransac_variant.h"
+#include "theia/solvers/sample_consensus_estimator.h"
+
+
+#include "theia/sfm/sfm_wrapper.h"
+#include "theia/sfm/exif_reader.h"
+#include "theia/sfm/estimate_twoview_info.h"
+#include "theia/sfm/estimate_track.h"
+#include "theia/sfm/colorize_reconstruction.h"
+#include "theia/sfm/extract_maximally_parallel_rigid_subgraph.h"
+#include "theia/sfm/feature_extractor.h"
+#include "theia/sfm/feature_extractor_and_matcher.h"
+#include "theia/sfm/filter_view_graph_cycles_by_rotation.h"
+#include "theia/sfm/filter_view_pairs_from_orientation.h"
+#include "theia/sfm/filter_view_pairs_from_relative_translation.h"
+#include "theia/sfm/find_common_tracks_in_views.h"
+#include "theia/sfm/find_common_views_by_name.h"
+#include "theia/sfm/gps_converter.h"
+#include "theia/sfm/localize_view_to_reconstruction.h"
+#include "theia/sfm/select_good_tracks_for_bundle_adjustment.h"
+#include "theia/sfm/set_camera_intrinsics_from_priors.h"
+#include "theia/sfm/set_outlier_tracks_to_unestimated.h"
+#include "theia/sfm/undistort_image.h"
+
 
 // for overloaded function in CameraInstrinsicsModel
 template <typename... Args>
@@ -455,6 +479,35 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
+  // estimator ransac
+  //RansacSummary
+  py::class_<theia::RansacSummary>(m, "RansacSummary")
+    .def_readwrite("inliers", &theia::RansacSummary::inliers)
+    .def_readwrite("num_input_data_points", &theia::RansacSummary::num_input_data_points)
+    .def_readwrite("num_iterations", &theia::RansacSummary::num_iterations)
+    .def_readwrite("confidence", &theia::RansacSummary::confidence)
+
+  ;
+
+  py::class_<theia::RansacParameters>(m, "RansacParameters")
+    .def(py::init<>())
+    .def_readwrite("error_thresh", &theia::RansacParameters::error_thresh)
+    .def_readwrite("failure_probability", &theia::RansacParameters::failure_probability)
+    .def_readwrite("min_inlier_ratio", &theia::RansacParameters::min_inlier_ratio)
+    .def_readwrite("min_iterations", &theia::RansacParameters::min_iterations)
+    .def_readwrite("max_iterations", &theia::RansacParameters::max_iterations)
+    .def_readwrite("use_mle", &theia::RansacParameters::use_mle)
+    .def_readwrite("use_Tdd_test", &theia::RansacParameters::use_Tdd_test)
+  ;
+
+  py::enum_<theia::RansacType>(m, "RansacType")
+    .value("RANSAC", theia::RansacType::RANSAC)
+    .value("PROSAC", theia::RansacType::PROSAC)
+    .value("LMED", theia::RansacType::LMED)
+    .value("EXHAUSTIVE", theia::RansacType::EXHAUSTIVE)
+    .export_values()
+  ;
+
   m.def("EstimateAbsolutePoseWithKnownOrientation", theia::EstimateAbsolutePoseWithKnownOrientationWrapper);
   m.def("EstimateCalibratedAbsolutePose", theia::EstimateCalibratedAbsolutePoseWrapper);
   m.def("EstimateDominantPlaneFromPoints", theia::EstimateDominantPlaneFromPointsWrapper);
@@ -482,6 +535,52 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("TriangulateNView", theia::TriangulateNViewWrapper);
   m.def("IsTriangulatedPointInFrontOfCameras", theia::IsTriangulatedPointInFrontOfCameras);
   m.def("SufficientTriangulationAngle", theia::SufficientTriangulationAngle);
+
+  // function in the sfm folder
+
+  py::class_<theia::EstimateTwoViewInfoOptions>(m, "EstimateTwoViewInfoOptions")
+    .def(py::init<>())
+    .def_readwrite("ransac_type", &theia::EstimateTwoViewInfoOptions::ransac_type)
+    .def_readwrite("max_sampson_error_pixels", &theia::EstimateTwoViewInfoOptions::max_sampson_error_pixels)
+    .def_readwrite("expected_ransac_confidence", &theia::EstimateTwoViewInfoOptions::expected_ransac_confidence)
+    .def_readwrite("min_ransac_iterations", &theia::EstimateTwoViewInfoOptions::min_ransac_iterations)
+    .def_readwrite("max_ransac_iterations", &theia::EstimateTwoViewInfoOptions::max_ransac_iterations)
+    .def_readwrite("use_mle", &theia::EstimateTwoViewInfoOptions::use_mle)
+  ;
+
+  py::class_<theia::FilterViewPairsFromRelativeTranslationOptions>(m, "FilterViewPairsFromRelativeTranslationOptions")
+    .def(py::init<>())
+    .def_readwrite("num_threads", &theia::FilterViewPairsFromRelativeTranslationOptions::num_threads)
+    .def_readwrite("num_iterations", &theia::FilterViewPairsFromRelativeTranslationOptions::num_iterations)
+    .def_readwrite("translation_projection_tolerance", &theia::FilterViewPairsFromRelativeTranslationOptions::translation_projection_tolerance)
+  ;
+
+  py::class_<theia::LocalizeViewToReconstructionOptions>(m, "LocalizeViewToReconstructionOptions")
+    .def(py::init<>())
+    .def_readwrite("reprojection_error_threshold_pixels", &theia::LocalizeViewToReconstructionOptions::reprojection_error_threshold_pixels)
+    .def_readwrite("assume_known_orientation", &theia::LocalizeViewToReconstructionOptions::assume_known_orientation)
+    .def_readwrite("ransac_params", &theia::LocalizeViewToReconstructionOptions::ransac_params)
+    .def_readwrite("bundle_adjust_view", &theia::LocalizeViewToReconstructionOptions::bundle_adjust_view)
+    .def_readwrite("ba_options", &theia::LocalizeViewToReconstructionOptions::ba_options)
+    .def_readwrite("min_num_inliers", &theia::LocalizeViewToReconstructionOptions::min_num_inliers)
+  ;
+
+
+  m.def("EstimateTwoViewInfo", theia::EstimateTwoViewInfoWrapper);
+  m.def("ColorizeReconstruction", theia::ColorizeReconstructionWrapper);
+  m.def("ExtractMaximallyParallelRigidSubgraph", theia::ExtractMaximallyParallelRigidSubgraphWrapper);
+  m.def("FilterViewGraphCyclesByRotation", theia::FilterViewGraphCyclesByRotationWrapper);
+  m.def("FilterViewPairsFromOrientation", theia::FilterViewPairsFromOrientationWrapper);
+  m.def("FilterViewPairsFromRelativeTranslation", theia::FilterViewPairsFromRelativeTranslationWrapper);
+  m.def("LocalizeViewToReconstruction", theia::LocalizeViewToReconstructionWrapper);
+  m.def("SelectGoodTracksForBundleAdjustmentAll", theia::SelectGoodTracksForBundleAdjustmentAllWrapper);
+  m.def("SelectGoodTracksForBundleAdjustment", theia::SelectGoodTracksForBundleAdjustmentWrapper);
+  m.def("SetCameraIntrinsicsFromPriors", theia::SetCameraIntrinsicsFromPriorsWrapper);
+  m.def("SetOutlierTracksToUnestimated", theia::SetOutlierTracksToUnestimatedWrapper);
+  m.def("SetOutlierTracksToUnestimatedAll", theia::SetOutlierTracksToUnestimatedAllWrapper);
+  m.def("UndistortImage", theia::UndistortImageWrapper);
+  m.def("UndistortCamera", theia::UndistortCameraWrapper);
+  m.def("UndistortReconstruction", theia::UndistortReconstructionWrapper);
 
 
   // View class
@@ -619,6 +718,19 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
 
   ;
+
+  // Reconstruction Estimator
+
+  // ExifReader
+  py::class_<theia::ExifReader>(m, "ExifReader")
+    .def(py::init<>())
+    .def("ExtractEXIFMetadataWrapper", &theia::ExifReader::ExtractEXIFMetadataWrapper)
+  ;
+
+
+
+
+
 
   // TwoViewInfo
   py::class_<theia::TwoViewInfo>(m, "TwoViewInfo")

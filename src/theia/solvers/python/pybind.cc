@@ -50,6 +50,17 @@ PYBIND11_MODULE(pytheia_solvers, m) {
 
     ;
 
+    py::class_<theia::RansacParameters>(m, "RansacParameters")
+      .def(py::init<>())
+      .def_readwrite("error_thresh", &theia::RansacParameters::error_thresh)
+      .def_readwrite("failure_probability", &theia::RansacParameters::failure_probability)
+      .def_readwrite("min_inlier_ratio", &theia::RansacParameters::min_inlier_ratio)
+      .def_readwrite("min_iterations", &theia::RansacParameters::min_iterations)
+      .def_readwrite("max_iterations", &theia::RansacParameters::max_iterations)
+      .def_readwrite("use_mle", &theia::RansacParameters::use_mle)
+      .def_readwrite("use_Tdd_test", &theia::RansacParameters::use_Tdd_test)
+    ;
+
     py::enum_<theia::FittingMethod>(m, "FittingMethod")
       .value("MLE", theia::FittingMethod::MLE)
       .value("QUANTILE_NLS", theia::FittingMethod::QUANTILE_NLS)

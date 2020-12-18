@@ -51,7 +51,7 @@ std::tuple<bool, Plane, RansacSummary> EstimateDominantPlaneFromPointsWrapper(
     Plane plane;
     RansacSummary ransac_summary;
     const bool success = EstimateDominantPlaneFromPoints(ransac_params, ransac_type, points, &plane, &ransac_summary);
-    return std::make_tuple(success, ransac_summary);
+    return std::make_tuple(success, plane, ransac_summary);
 
 }
 
@@ -62,7 +62,7 @@ std::tuple<bool, Eigen::Matrix3d, RansacSummary> EstimateEssentialMatrixWrapper(
     Eigen::Matrix3d essential_matrix;
     RansacSummary ransac_summary;
     const bool success = EstimateEssentialMatrix(ransac_params, ransac_type, normalized_correspondences, &essential_matrix, &ransac_summary);
-    return std::make_tuple(essential_matrix, ransac_summary);
+    return std::make_tuple(success, essential_matrix, ransac_summary);
 
 }
 
@@ -70,7 +70,7 @@ std::tuple<bool, Eigen::Matrix3d, RansacSummary> EstimateFundamentalMatrixWrappe
     const RansacParameters& ransac_params,
     const RansacType& ransac_type,
     const std::vector<FeatureCorrespondence>& correspondences){
-    Eigen::Matrix3d* fundamental_matrix;
+    Eigen::Matrix3d fundamental_matrix;
     RansacSummary ransac_summary;
     const bool success = EstimateFundamentalMatrix(ransac_params, ransac_type, correspondences, &fundamental_matrix, &ransac_summary);
     return std::make_tuple(success, fundamental_matrix, ransac_summary);

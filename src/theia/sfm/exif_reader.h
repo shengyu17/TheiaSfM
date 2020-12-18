@@ -71,6 +71,9 @@ class ExifReader {
       const std::string& image_file,
       CameraIntrinsicsPrior* camera_intrinsics_prior) const;
 
+  std::tuple<bool, CameraIntrinsicsPrior> ExtractEXIFMetadataWrapper(
+      const std::string& image_file);
+
  private:
   void LoadSensorWidthDatabase();
 

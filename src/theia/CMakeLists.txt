@@ -101,6 +101,7 @@ set(THEIA_SRC
   math/probability/sequential_probability_ratio.cc
   math/qp_solver.cc
   math/rotation.cc
+  sfm/sfm_wrapper.cc
   sfm/bundle_adjustment/bundle_adjustment_wrapper.cc
   sfm/bundle_adjustment/bundle_adjust_two_views.cc
   sfm/bundle_adjustment/bundle_adjuster.cc
