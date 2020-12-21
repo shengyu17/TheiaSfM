@@ -53,11 +53,7 @@
 #include "theia/sfm/camera/pinhole_camera_model.h"
 #include "theia/sfm/camera/pinhole_radial_tangential_camera_model.h"
 
-#include "theia/sfm/view.h"
-#include "theia/sfm/track.h"
-#include "theia/sfm/reconstruction.h"
-#include "theia/sfm/twoview_info.h"
-#include "theia/sfm/view_graph/view_graph.h"
+
 
 
 #include "theia/sfm/bundle_adjustment/bundle_adjustment.h"
@@ -79,8 +75,22 @@
 #include "theia/sfm/global_pose_estimation/global_pose_estimation_wrapper.h"
 
 // reconstruction view track
+#include "theia/sfm/view.h"
+#include "theia/sfm/track.h"
+#include "theia/sfm/reconstruction.h"
+#include "theia/sfm/twoview_info.h"
+#include "theia/sfm/view_graph/view_graph.h"
+#include "theia/sfm/visibility_pyramid.h"
+#include "theia/sfm/two_view_match_geometric_verification.h"
+#include "theia/matching/keypoints_and_descriptors.h"
+
 #include "theia/sfm/reconstruction_estimator.h"
 #include "theia/sfm/reconstruction_estimator_options.h"
+#include "theia/sfm/incremental_reconstruction_estimator.h"
+#include "theia/sfm/hybrid_reconstruction_estimator.h"
+#include "theia/sfm/track_builder.h"
+#include "theia/sfm/reconstruction_builder.h"
+
 #include "theia/sfm/similarity_transformation.h"
 #include "theia/sfm/rigid_transformation.h"
 
@@ -581,6 +591,8 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("UndistortImage", theia::UndistortImageWrapper);
   m.def("UndistortCamera", theia::UndistortCameraWrapper);
   m.def("UndistortReconstruction", theia::UndistortReconstructionWrapper);
+  m.def("FindCommonViewsByName", theia::FindCommonViewsByName);
+  m.def("FindCommonTracksInViews", theia::FindCommonTracksInViews);
 
 
   // View class
@@ -600,6 +612,42 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("CameraIntrinsicsPrior", &theia::View::CameraIntrinsicsPrior)
 
   ;
+  // Visibility pyramid
+  py::class_<theia::VisibilityPyramid>(m, "VisibilityPyramid")
+    .def(py::init<int, int, int>())
+    .def("AddPoint", &theia::VisibilityPyramid::AddPoint)
+    .def("ComputeScore", &theia::VisibilityPyramid::ComputeScore)
+  ;
+
+  // TwoViewMatchGeometricVerification Options
+  py::class_<theia::TwoViewMatchGeometricVerification::Options>(m, "TwoViewMatchGeometricVerificationOptions")
+    .def(py::init<>())
+    .def_readwrite("estimate_twoview_info_options", &theia::TwoViewMatchGeometricVerification::Options::estimate_twoview_info_options)
+    .def_readwrite("min_num_inlier_matches", &theia::TwoViewMatchGeometricVerification::Options::min_num_inlier_matches)
+    .def_readwrite("guided_matching", &theia::TwoViewMatchGeometricVerification::Options::guided_matching)
+    .def_readwrite("guided_matching_max_distance_pixels", &theia::TwoViewMatchGeometricVerification::Options::guided_matching_max_distance_pixels)
+    .def_readwrite("guided_matching_lowes_ratio", &theia::TwoViewMatchGeometricVerification::Options::guided_matching_lowes_ratio)
+    .def_readwrite("bundle_adjustment", &theia::TwoViewMatchGeometricVerification::Options::bundle_adjustment)
+    .def_readwrite("triangulation_max_reprojection_error", &theia::TwoViewMatchGeometricVerification::Options::triangulation_max_reprojection_error)
+    .def_readwrite("min_triangulation_angle_degrees", &theia::TwoViewMatchGeometricVerification::Options::min_triangulation_angle_degrees)
+    .def_readwrite("final_max_reprojection_error", &theia::TwoViewMatchGeometricVerification::Options::final_max_reprojection_error)
+
+  ;
+
+  // KeypointsAndDescriptors
+  py::class_<theia::KeypointsAndDescriptors>(m, "KeypointsAndDescriptors")
+    .def(py::init<>())
+    .def_readwrite("image_name", &theia::KeypointsAndDescriptors::image_name)
+    .def_readwrite("keypoints", &theia::KeypointsAndDescriptors::keypoints)
+    .def_readwrite("descriptors", &theia::KeypointsAndDescriptors::descriptors)
+  ;
+
+  // TwoViewMatchGeometricVerification
+  py::class_<theia::TwoViewMatchGeometricVerification>(m, "TwoViewMatchGeometricVerification")
+    .def(py::init<theia::TwoViewMatchGeometricVerification::Options, theia::CameraIntrinsicsPrior, theia::CameraIntrinsicsPrior, theia::KeypointsAndDescriptors, theia::KeypointsAndDescriptors, std::vector<theia::IndexedFeatureMatch>>())
+    .def("VerifyMatches", &theia::TwoViewMatchGeometricVerification::VerifyMatches)
+  ;
+
 
   // Track class
   py::class_<theia::Track>(m, "Track")
@@ -618,6 +666,78 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("Color", &theia::Track::Color)
 
   ;
+
+  // Track builder class
+  py::class_<theia::TrackBuilder>(m, "TrackBuilder")
+    .def(py::init<int, int>())
+    .def("AddFeatureCorrespondence", &theia::TrackBuilder::AddFeatureCorrespondence)
+    .def("BuildTracks", &theia::TrackBuilder::BuildTracks)
+  ;
+
+
+  py::class_<theia::BundleAdjustmentOptions>(m, "BundleAdjustmentOptions")
+    .def(py::init<>())
+    .def_readwrite("loss_function_type", &theia::BundleAdjustmentOptions::loss_function_type)
+    .def_readwrite("robust_loss_width", &theia::BundleAdjustmentOptions::robust_loss_width)
+    .def_readwrite("verbose", &theia::BundleAdjustmentOptions::verbose)
+    .def_readwrite("constant_camera_orientation", &theia::BundleAdjustmentOptions::constant_camera_orientation)
+    .def_readwrite("constant_camera_position", &theia::BundleAdjustmentOptions::constant_camera_position)
+    .def_readwrite("intrinsics_to_optimize", &theia::BundleAdjustmentOptions::intrinsics_to_optimize)
+    .def_readwrite("num_threads", &theia::BundleAdjustmentOptions::num_threads)
+    .def_readwrite("max_num_iterations", &theia::BundleAdjustmentOptions::max_num_iterations)
+    .def_readwrite("max_solver_time_in_seconds", &theia::BundleAdjustmentOptions::max_solver_time_in_seconds)
+    .def_readwrite("use_inner_iterations", &theia::BundleAdjustmentOptions::use_inner_iterations)
+    .def_readwrite("function_tolerance", &theia::BundleAdjustmentOptions::function_tolerance)
+    .def_readwrite("gradient_tolerance", &theia::BundleAdjustmentOptions::gradient_tolerance)
+    .def_readwrite("parameter_tolerance", &theia::BundleAdjustmentOptions::parameter_tolerance)
+    .def_readwrite("max_trust_region_radius", &theia::BundleAdjustmentOptions::max_trust_region_radius)
+  ;
+
+
+  // Track Estimator Options
+  py::class_<theia::TrackEstimator::Options>(m, "TrackEstimatorOptions")
+    .def_readwrite("num_threads", &theia::TrackEstimator::Options::num_threads)
+    .def_readwrite("max_acceptable_reprojection_error_pixels", &theia::TrackEstimator::Options::max_acceptable_reprojection_error_pixels)
+    .def_readwrite("min_triangulation_angle_degrees", &theia::TrackEstimator::Options::min_triangulation_angle_degrees)
+    .def_readwrite("bundle_adjustment", &theia::TrackEstimator::Options::bundle_adjustment)
+    //.def_readwrite("BundleAdjustmentOptions", &theia::BundleAdjustmentOptions)
+    .def_readwrite("multithreaded_step_size", &theia::TrackEstimator::Options::multithreaded_step_size)
+  ;
+
+  // Track Estimator Summary
+  py::class_<theia::TrackEstimator::Summary>(m, "TrackEstimatorSummary")
+    .def_readwrite("input_num_estimated_tracks", &theia::TrackEstimator::Summary::input_num_estimated_tracks)
+    .def_readwrite("num_triangulation_attempts", &theia::TrackEstimator::Summary::num_triangulation_attempts)
+    .def_readwrite("estimated_tracks", &theia::TrackEstimator::Summary::estimated_tracks)
+
+  ;
+
+  // Track Estimator class
+  py::class_<theia::TrackEstimator>(m, "TrackEstimator")
+    //.def(py::init<theia::TrackEstimator::Options, theia::Reconstruction>())
+    .def("EstimateAllTracks", &theia::TrackEstimator::EstimateAllTracks)
+    .def("EstimateTracks", &theia::TrackEstimator::EstimateTracks)
+  ;
+
+
+
+  // Reconstruction Estimator class
+  py::class_<theia::ReconstructionEstimator>(m, "ReconstructionEstimator")
+    .def_static("Create", &theia::ReconstructionEstimator::Create, py::return_value_policy::reference)
+  ;
+
+  // not sure about pointer  IncrementalReconstructionEstimator
+  py::class_<theia::IncrementalReconstructionEstimator, theia::ReconstructionEstimator>(m, "IncrementalReconstructionEstimator")
+    .def(py::init<theia::ReconstructionEstimatorOptions>())
+    .def("Estimate", &theia::IncrementalReconstructionEstimator::Estimate)
+  ;
+
+  // not sure about pointer  HybridReconstructionEstimator
+  py::class_<theia::HybridReconstructionEstimator, theia::ReconstructionEstimator>(m, "HybridReconstructionEstimator")
+    .def(py::init<theia::ReconstructionEstimatorOptions>())
+    .def("Estimate", &theia::HybridReconstructionEstimator::Estimate)
+  ;
+
 
   // Reconstruction Options
 
@@ -642,7 +762,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .export_values()
   ;
 
-  // TwoViewInfo
+  // ReconstructionEstimatorOptions
   py::class_<theia::ReconstructionEstimatorOptions>(m, "ReconstructionEstimatorOptions")
     .def(py::init<>())
     .def_readwrite("reconstruction_estimator_type", &theia::ReconstructionEstimatorOptions::reconstruction_estimator_type)
@@ -801,24 +921,6 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .value("ARCTAN", theia::LossFunctionType::ARCTAN)
     .value("TUKEY", theia::LossFunctionType::TUKEY)
     .export_values()
-  ;
-
-  py::class_<theia::BundleAdjustmentOptions>(m, "BundleAdjustmentOptions")
-    .def(py::init<>())
-    .def_readwrite("loss_function_type", &theia::BundleAdjustmentOptions::loss_function_type)
-    .def_readwrite("robust_loss_width", &theia::BundleAdjustmentOptions::robust_loss_width)
-    .def_readwrite("verbose", &theia::BundleAdjustmentOptions::verbose)
-    .def_readwrite("constant_camera_orientation", &theia::BundleAdjustmentOptions::constant_camera_orientation)
-    .def_readwrite("constant_camera_position", &theia::BundleAdjustmentOptions::constant_camera_position)
-    .def_readwrite("intrinsics_to_optimize", &theia::BundleAdjustmentOptions::intrinsics_to_optimize)
-    .def_readwrite("num_threads", &theia::BundleAdjustmentOptions::num_threads)
-    .def_readwrite("max_num_iterations", &theia::BundleAdjustmentOptions::max_num_iterations)
-    .def_readwrite("max_solver_time_in_seconds", &theia::BundleAdjustmentOptions::max_solver_time_in_seconds)
-    .def_readwrite("use_inner_iterations", &theia::BundleAdjustmentOptions::use_inner_iterations)
-    .def_readwrite("function_tolerance", &theia::BundleAdjustmentOptions::function_tolerance)
-    .def_readwrite("gradient_tolerance", &theia::BundleAdjustmentOptions::gradient_tolerance)
-    .def_readwrite("parameter_tolerance", &theia::BundleAdjustmentOptions::parameter_tolerance)
-    .def_readwrite("max_trust_region_radius", &theia::BundleAdjustmentOptions::max_trust_region_radius)
   ;
 
   //TwoViewBundleAdjustmentOptions
