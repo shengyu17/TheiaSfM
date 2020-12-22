@@ -30,6 +30,7 @@ PYBIND11_MODULE(pytheia_matching, m) {
     ;
 
     //RocksDbFeaturesAndMatchesDatabase
+
     py::class_<theia::RocksDbFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "RocksDbFeaturesAndMatchesDatabase")
       .def(py::init<std::string>())
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
