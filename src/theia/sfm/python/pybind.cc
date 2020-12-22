@@ -86,6 +86,7 @@
 
 #include "theia/sfm/reconstruction_estimator.h"
 #include "theia/sfm/reconstruction_estimator_options.h"
+#include "theia/sfm/reconstruction_builder.h"
 #include "theia/sfm/incremental_reconstruction_estimator.h"
 #include "theia/sfm/hybrid_reconstruction_estimator.h"
 #include "theia/sfm/track_builder.h"
@@ -737,6 +738,36 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def(py::init<theia::ReconstructionEstimatorOptions>())
     .def("Estimate", &theia::HybridReconstructionEstimator::Estimate)
   ;
+
+  // Reconstruction Builder Options
+  py::class_<theia::ReconstructionBuilderOptions>(m, "ReconstructionBuilderOptions")
+    .def(py::init<>())
+    .def_readwrite("reconstruct_largest_connected_component", &theia::ReconstructionBuilderOptions::reconstruct_largest_connected_component)
+    .def_readwrite("only_calibrated_views", &theia::ReconstructionBuilderOptions::only_calibrated_views)
+    .def_readwrite("min_track_length", &theia::ReconstructionBuilderOptions::min_track_length)
+    .def_readwrite("max_track_length", &theia::ReconstructionBuilderOptions::max_track_length)
+    .def_readwrite("min_num_inlier_matches", &theia::ReconstructionBuilderOptions::min_num_inlier_matches)
+    .def_readwrite("features_and_matches_database_directory", &theia::ReconstructionBuilderOptions::features_and_matches_database_directory)
+    .def_readwrite("select_image_pairs_with_global_image_descriptor_matching", &theia::ReconstructionBuilderOptions::select_image_pairs_with_global_image_descriptor_matching)
+    .def_readwrite("num_nearest_neighbors_for_global_descriptor_matching", &theia::ReconstructionBuilderOptions::num_nearest_neighbors_for_global_descriptor_matching)
+    .def_readwrite("num_gmm_clusters_for_fisher_vector", &theia::ReconstructionBuilderOptions::num_gmm_clusters_for_fisher_vector)
+    .def_readwrite("max_num_features_for_fisher_vector_training", &theia::ReconstructionBuilderOptions::max_num_features_for_fisher_vector_training)
+    .def_readwrite("reconstruction_estimator_options", &theia::ReconstructionBuilderOptions::reconstruction_estimator_options)
+  ;
+
+  // Reconstruction Builder
+  py::class_<theia::ReconstructionBuilder>(m, "ReconstructionBuilder")
+    //.def(py::init<>())
+    .def("AddImage", (bool (theia::ReconstructionBuilder::*)(const std::string& )) &theia::ReconstructionBuilder::AddImage)
+    .def("AddImage", (bool (theia::ReconstructionBuilder::*)(const std::string&,  unsigned int )) &theia::ReconstructionBuilder::AddImage)
+    .def("AddImageWithCameraIntrinsicsPrior", (bool (theia::ReconstructionBuilder::*)(const std::string&, const theia::CameraIntrinsicsPrior& )) &theia::ReconstructionBuilder::AddImageWithCameraIntrinsicsPrior)
+    .def("AddImageWithCameraIntrinsicsPrior", (bool (theia::ReconstructionBuilder::*)(const std::string&, const theia::CameraIntrinsicsPrior&, unsigned int )) &theia::ReconstructionBuilder::AddImageWithCameraIntrinsicsPrior)
+    //.def("AddTwoViewMatch", &theia::ReconstructionBuilder::AddTwoViewMatch)
+    .def("AddMaskForFeaturesExtraction", &theia::ReconstructionBuilder::AddMaskForFeaturesExtraction)
+    .def("ExtractAndMatchFeatures", &theia::ReconstructionBuilder::ExtractAndMatchFeatures)
+
+  ;
+
 
 
   // Reconstruction Options
