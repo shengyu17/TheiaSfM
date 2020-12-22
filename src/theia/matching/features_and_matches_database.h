@@ -42,8 +42,10 @@
 #include "theia/matching/image_pair_match.h"
 #include "theia/matching/keypoints_and_descriptors.h"
 #include "theia/sfm/camera_intrinsics_prior.h"
+#include "cereal/../pybind11/include/pybind11/pybind11.h"
 
 namespace theia {
+
 
 // An interface for retreiving feature and match related data. This data is
 // typically memory intensive so caches or database systems may be used to
@@ -98,5 +100,17 @@ class FeaturesAndMatchesDatabase {
   // Clear all matches from the DB.
   virtual void RemoveAllMatches() = 0;
 };
+
+class PyFeaturesAndMatchesDatabase : public FeaturesAndMatchesDatabase {
+public:
+    using FeaturesAndMatchesDatabase::FeaturesAndMatchesDatabase; // Inherit constructors
+    bool ContainsCameraIntrinsicsPrior(const std::string& image_name) override { PYBIND11_OVERRIDE_PURE(bool, FeaturesAndMatchesDatabase, ContainsCameraIntrinsicsPrior, image_name); }
+//    CameraIntrinsicsPrior GetCameraIntrinsicsPrior(const std::string& image_name) override { PYBIND11_OVERRIDE_PURE(bool, FeaturesAndMatchesDatabase, ContainsCameraIntrinsicsPrior, image_name); }
+//    bool ContainsCameraIntrinsicsPrior(const std::string& image_name) override { PYBIND11_OVERRIDE_PURE(bool, FeaturesAndMatchesDatabase, ContainsCameraIntrinsicsPrior, image_name); }
+//    bool ContainsCameraIntrinsicsPrior(const std::string& image_name) override { PYBIND11_OVERRIDE_PURE(bool, FeaturesAndMatchesDatabase, ContainsCameraIntrinsicsPrior, image_name); }
+//    bool ContainsCameraIntrinsicsPrior(const std::string& image_name) override { PYBIND11_OVERRIDE_PURE(bool, FeaturesAndMatchesDatabase, ContainsCameraIntrinsicsPrior, image_name); }
+
+};
+
 }  // namespace theia
 #endif  // THEIA_MATCHING_FEATURES_AND_MATCHES_DATABASE_H_

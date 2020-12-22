@@ -28,11 +28,16 @@ PYBIND11_MODULE(pytheia_image, m) {
       .def(py::init())
       .def(py::init<int, int, int>())
       .def(py::init<theia::FloatImage>())
+      .def(py::init<std::string>())
       .def_property_readonly("Rows", &theia::FloatImage::Rows)
       .def_property_readonly("Cols", &theia::FloatImage::Cols)
       .def_property_readonly("Width", &theia::FloatImage::Width)
       .def_property_readonly("Height", &theia::FloatImage::Height)
       .def_property_readonly("Channels", &theia::FloatImage::Channels)
+      //.def("GetRowCol", &theia::FloatImage::GetRowCol)
+      //.def("SetRowCol", &theia::FloatImage::SetRowCol)
+      //.def("GetXY", &theia::FloatImage::GetXY)
+      //.def("SetXY", &theia::FloatImage::SetXY)
       .def("Read", &theia::FloatImage::Read)
       .def("Write", &theia::FloatImage::Write)
       .def("ComputeGradient", &theia::FloatImage::ComputeGradient)
@@ -47,6 +52,14 @@ PYBIND11_MODULE(pytheia_image, m) {
     py::class_<theia::Keypoint>(m, "Keypoint")
       .def(py::init())
       .def(py::init<double, double, theia::Keypoint::KeypointType>())
+    ;
+
+    py::enum_<theia::Keypoint::KeypointType>(m, "KeypointType")
+      .value("INVALID", theia::Keypoint::KeypointType::INVALID)
+      .value("OTHER", theia::Keypoint::KeypointType::OTHER)
+      .value("SIFT", theia::Keypoint::KeypointType::SIFT)
+      .value("AKAZE", theia::Keypoint::KeypointType::AKAZE)
+      .export_values()
     ;
 
     //sift parameters
@@ -65,7 +78,7 @@ PYBIND11_MODULE(pytheia_image, m) {
       .def(py::init())
       .def(py::init<int, int, int>())
       .def(py::init<theia::SiftParameters>())
-      .def("DetectKeypoints", &theia::SiftDetector::DetectKeypoints)
+      .def("DetectKeypoints", &theia::SiftDetector::DetectKeypointsWrapper)
 
     ;
 

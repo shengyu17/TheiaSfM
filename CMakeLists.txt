@@ -246,7 +246,6 @@ include_directories(
   ${PYTHON_INCLUDE_DIRS}
 )
 
-
 # NOTE: This fix came from Ceres solver with the following comment:
 #
 # Eigen SparseQR generates various compiler warnings related to unused and
