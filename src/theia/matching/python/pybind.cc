@@ -88,7 +88,7 @@ PYBIND11_MODULE(pytheia_matching, m) {
       //abstract class in the constructor
       //.def(py::init<theia::FeatureMatcherOptions, &theia::FeaturesAndMatchesDatabase>())
       .def("AddImages", (void (theia::FeatureMatcher::*)(const std::vector<std::string>& )) &theia::FeatureMatcher::AddImages, py::return_value_policy::reference_internal)
-      .def("AddImages", (void (theia::FeatureMatcher::*)(const std::string& )) &theia::FeatureMatcher::AddImages, py::return_value_policy::reference_internal)
+      .def("AddImage", (void (theia::FeatureMatcher::*)(const std::string& )) &theia::FeatureMatcher::AddImage, py::return_value_policy::reference_internal)
       .def("MatchImages", &theia::FeatureMatcher::MatchImages)
       .def("SetImagePairsToMatch", &theia::FeatureMatcher::SetImagePairsToMatch)
 
