@@ -36,7 +36,15 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
     ;
 
+    py::class_<theia::ImagePairMatch>(m, "ImagePairMatch")
+      .def(py::init<>())
+      .def_readwrite("image1", &theia::ImagePairMatch::image1)
+      .def_readwrite("image2", &theia::ImagePairMatch::image2)
+      .def_readwrite("twoview_info", &theia::ImagePairMatch::twoview_info)
+      .def_readwrite("correspondences", &theia::ImagePairMatch::correspondences)
 
+    ;
+/*
     //TwoViewMatchGeometricVerification Options
     py::class_<theia::TwoViewMatchGeometricVerification::Options>(m, "TwoViewMatchGeometricVerificationOptions")
 
@@ -50,6 +58,7 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def_readwrite("final_max_reprojection_error", &theia::TwoViewMatchGeometricVerification::Options::final_max_reprojection_error)
 
     ;
+    */
 
     //FeatureMatcherOptions
     py::class_<theia::FeatureMatcherOptions>(m, "FeatureMatcherOptions")
@@ -106,9 +115,9 @@ PYBIND11_MODULE(pytheia_matching, m) {
     //CascadeHashingFeatureMatcher
     py::class_<theia::CascadeHashingFeatureMatcher, theia::FeatureMatcher>(m, "CascadeHashingFeatureMatcher")
       //abstract class in the constructor
-      //.def(py::init<theia::FeatureMatcherOptions, theia::FeaturesAndMatchesDatabase>())
+      .def(py::init<theia::FeatureMatcherOptions, theia::FeaturesAndMatchesDatabase*>())
       .def("AddImages", (void (theia::CascadeHashingFeatureMatcher::*)(const std::vector<std::string>& )) &theia::CascadeHashingFeatureMatcher::AddImages, py::return_value_policy::reference_internal)
-      .def("AddImages", (void (theia::CascadeHashingFeatureMatcher::*)(const std::string& )) &theia::CascadeHashingFeatureMatcher::AddImages, py::return_value_policy::reference_internal)
+      .def("AddImage", (void (theia::CascadeHashingFeatureMatcher::*)(const std::string& )) &theia::CascadeHashingFeatureMatcher::AddImage, py::return_value_policy::reference_internal)
 
 
     ;
