@@ -895,8 +895,12 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
 
     .def("View", &theia::Reconstruction::View, py::return_value_policy::reference)
-    .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
-    .def("GetViewsInCameraIntrinsicGroup", &theia::Reconstruction::GetViewsInCameraIntrinsicGroup)
+    .def("MutableView", &theia::Reconstruction::MutableView, py::return_value_policy::reference)
+
+          .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
+    .def("MutableTrack", &theia::Reconstruction::MutableTrack, py::return_value_policy::reference)
+
+          .def("GetViewsInCameraIntrinsicGroup", &theia::Reconstruction::GetViewsInCameraIntrinsicGroup)
     .def("GetSubReconstruction", &theia::Reconstruction::GetSubReconstructionWrapper)
   ;
 

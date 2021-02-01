@@ -48,7 +48,24 @@ PYBIND11_MODULE(pytheia_matching, m) {
 
     ;
 
+    /*
+        //LocalFeaturesAndMatchesDatabase
 
+        py::class_<theia::LocalFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "LocalFeaturesAndMatchesDatabase")
+          .def(py::init<std::string>())
+          .def("ContainsFeatures", &theia::LocalFeaturesAndMatchesDatabase::ContainsFeatures)
+          .def("GetFeatures", &theia::LocalFeaturesAndMatchesDatabase::GetFeatures)
+          .def("PutFeatures", &theia::LocalFeaturesAndMatchesDatabase::PutFeatures)
+          .def("ImageNamesOfFeatures", &theia::LocalFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
+          .def("NumImages", &theia::LocalFeaturesAndMatchesDatabase::NumImages)
+          .def("GetImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::GetImagePairMatch)
+          .def("PutImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::PutImagePairMatch)
+          .def("NumMatches", &theia::LocalFeaturesAndMatchesDatabase::NumMatches)
+          .def("SaveMatchesAndGeometry", &theia::LocalFeaturesAndMatchesDatabase::SaveMatchesAndGeometry)
+
+        ;
+
+    */
     //FeatureMatcherOptions
     py::class_<theia::FeatureMatcherOptions>(m, "FeatureMatcherOptions")
       .def(py::init<>())
