@@ -39,6 +39,26 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
     ;
 
+    //InMemoryFeaturesAndMatchesDatabase
+
+    py::class_<theia::InMemoryFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "InMemoryFeaturesAndMatchesDatabase")
+      .def(py::init<>())
+      .def("ContainsFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsFeatures)
+      .def("GetFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::GetFeatures)
+      .def("PutFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::PutFeatures)
+      .def("ImageNamesOfFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
+      .def("NumImages", &theia::InMemoryFeaturesAndMatchesDatabase::NumImages)
+      .def("GetImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::GetImagePairMatch)
+      .def("PutImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::PutImagePairMatch)
+      .def("NumMatches", &theia::InMemoryFeaturesAndMatchesDatabase::NumMatches)
+      .def("PutCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::PutCameraIntrinsicsPrior)
+      .def("GetCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::GetCameraIntrinsicsPrior)
+      .def("NumCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::NumCameraIntrinsicsPrior)
+      .def("ImageNamesOfCameraIntrinsicsPriors", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfCameraIntrinsicsPriors)
+      .def("ImageNamesOfMatches", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfMatches)
+      .def("ContainsCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
+
+    ;
     py::class_<theia::ImagePairMatch>(m, "ImagePairMatch")
       .def(py::init<>())
       .def_readwrite("image1", &theia::ImagePairMatch::image1)
