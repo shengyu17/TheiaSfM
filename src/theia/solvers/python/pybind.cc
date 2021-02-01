@@ -70,6 +70,7 @@ PYBIND11_MODULE(pytheia_solvers, m) {
 
     py::class_<theia::Sampler> sampler(m, "Sampler");
 
+
     py::class_<theia::ProsacSampler>(m, "ProsacSampler", sampler)
       .def(py::init<std::shared_ptr<theia::RandomNumberGenerator>, int>())
       .def("SetSampleNumber", &theia::ProsacSampler::SetSampleNumber)
@@ -92,14 +93,15 @@ PYBIND11_MODULE(pytheia_solvers, m) {
 
     ;
 
-    // templated subclass
-    /*
-    py::class_<theia::EvsacSampler>(m, "EvsacSampler", sampler)
-      .def(py::init<int, Eigen::MatrixXd, double, theia::FittingMethod>())
-      .def("Initialize", &theia::EvsacSampler::Initialize)
-      .def("Sample", &theia::EvsacSampler::Sample)
 
-    ;*/
+    // templated subclass
+
+    py::class_<theia::EvsacSampler<Eigen::Vector2d>>(m, "EvsacSampler", sampler)
+      .def(py::init<int, Eigen::MatrixXd, double, theia::FittingMethod>())
+      .def("Initialize", &theia::EvsacSampler<Eigen::Vector2d>::Initialize)
+      .def("Sample", &theia::EvsacSampler<Eigen::Vector2d>::Sample)
+
+    ;
 
     py::class_<theia::QualityMeasurement>(m, "QualityMeasurement")
 

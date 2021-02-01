@@ -151,6 +151,7 @@ void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
   }
 
 PYBIND11_MODULE(pytheia_sfm, m) {
+  //msub = m.def_submodule("io", jhkl);
 
   //matching
   py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
@@ -639,7 +640,16 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
+/*
+  // KeypointsAndDescriptors
+  py::class_<theia::KeypointsAndDescriptors>(m, "KeypointsAndDescriptors")
+    .def(py::init<>())
+    .def_readwrite("image_name", &theia::KeypointsAndDescriptors::image_name)
+    .def_readwrite("keypoints", &theia::KeypointsAndDescriptors::keypoints)
+    .def_readwrite("descriptors", &theia::KeypointsAndDescriptors::descriptors)
+  ;
 
+  */
 
   // TwoViewMatchGeometricVerification
   py::class_<theia::TwoViewMatchGeometricVerification>(m, "TwoViewMatchGeometricVerification")
@@ -719,6 +729,20 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("EstimateTracks", &theia::TrackEstimator::EstimateTracks)
   ;
 
+  // ReconstructionEstimatorSummary
+  py::class_<theia::ReconstructionEstimatorSummary>(m, "ReconstructionEstimatorSummary")
+    .def_readwrite("success", &theia::ReconstructionEstimatorSummary::success)
+    .def_readwrite("estimated_tracks", &theia::ReconstructionEstimatorSummary::estimated_tracks)
+    .def_readwrite("estimated_views", &theia::ReconstructionEstimatorSummary::estimated_views)
+    .def_readwrite("camera_intrinsics_calibration_time", &theia::ReconstructionEstimatorSummary::camera_intrinsics_calibration_time)
+    .def_readwrite("pose_estimation_time", &theia::ReconstructionEstimatorSummary::pose_estimation_time)
+    .def_readwrite("triangulation_time", &theia::ReconstructionEstimatorSummary::triangulation_time)
+    .def_readwrite("bundle_adjustment_time", &theia::ReconstructionEstimatorSummary::bundle_adjustment_time)
+    .def_readwrite("total_time", &theia::ReconstructionEstimatorSummary::total_time)
+    .def_readwrite("message", &theia::ReconstructionEstimatorSummary::message)
+
+
+  ;
 
 
   // Reconstruction Estimator class
@@ -871,11 +895,9 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
 
     .def("View", &theia::Reconstruction::View, py::return_value_policy::reference)
-    .def("MutableView", &theia::Reconstruction::MutableView, py::return_value_policy::reference)
     .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
-    .def("MutableTrack", &theia::Reconstruction::MutableTrack, py::return_value_policy::reference)
-
-
+    .def("GetViewsInCameraIntrinsicGroup", &theia::Reconstruction::GetViewsInCameraIntrinsicGroup)
+    .def("GetSubReconstruction", &theia::Reconstruction::GetSubReconstructionWrapper)
   ;
 
   // Reconstruction Estimator

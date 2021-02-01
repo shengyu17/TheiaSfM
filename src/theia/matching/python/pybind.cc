@@ -39,45 +39,15 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
     ;
 
-    //InMemoryFeaturesAndMatchesDatabase
-
-    py::class_<theia::InMemoryFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "InMemoryFeaturesAndMatchesDatabase")
+    py::class_<theia::ImagePairMatch>(m, "ImagePairMatch")
       .def(py::init<>())
-      .def("ContainsFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsFeatures)
-      .def("GetFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::GetFeatures)
-      .def("PutFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::PutFeatures)
-      .def("ImageNamesOfFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
-      .def("NumImages", &theia::InMemoryFeaturesAndMatchesDatabase::NumImages)
-      .def("GetImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::GetImagePairMatch)
-      .def("PutImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::PutImagePairMatch)
-      .def("NumMatches", &theia::InMemoryFeaturesAndMatchesDatabase::NumMatches)
-      .def("PutCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::PutCameraIntrinsicsPrior)
-      .def("GetCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::GetCameraIntrinsicsPrior)
-      .def("NumCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::NumCameraIntrinsicsPrior)
-      .def("ImageNamesOfCameraIntrinsicsPriors", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfCameraIntrinsicsPriors)
-      .def("ImageNamesOfMatches", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfMatches)
-      .def("ContainsCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
-
-
-    ;
-/*
-    //LocalFeaturesAndMatchesDatabase
-
-    py::class_<theia::LocalFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "LocalFeaturesAndMatchesDatabase")
-      .def(py::init<std::string>())
-      .def("ContainsFeatures", &theia::LocalFeaturesAndMatchesDatabase::ContainsFeatures)
-      .def("GetFeatures", &theia::LocalFeaturesAndMatchesDatabase::GetFeatures)
-      .def("PutFeatures", &theia::LocalFeaturesAndMatchesDatabase::PutFeatures)
-      .def("ImageNamesOfFeatures", &theia::LocalFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
-      .def("NumImages", &theia::LocalFeaturesAndMatchesDatabase::NumImages)
-      .def("GetImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::GetImagePairMatch)
-      .def("PutImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::PutImagePairMatch)
-      .def("NumMatches", &theia::LocalFeaturesAndMatchesDatabase::NumMatches)
-      .def("SaveMatchesAndGeometry", &theia::LocalFeaturesAndMatchesDatabase::SaveMatchesAndGeometry)
+      .def_readwrite("image1", &theia::ImagePairMatch::image1)
+      .def_readwrite("image2", &theia::ImagePairMatch::image2)
+      .def_readwrite("twoview_info", &theia::ImagePairMatch::twoview_info)
+      .def_readwrite("correspondences", &theia::ImagePairMatch::correspondences)
 
     ;
 
-*/
 
     //FeatureMatcherOptions
     py::class_<theia::FeatureMatcherOptions>(m, "FeatureMatcherOptions")
@@ -116,7 +86,7 @@ PYBIND11_MODULE(pytheia_matching, m) {
       //abstract class in the constructor
       //.def(py::init<theia::FeatureMatcherOptions, &theia::FeaturesAndMatchesDatabase>())
       .def("AddImages", (void (theia::FeatureMatcher::*)(const std::vector<std::string>& )) &theia::FeatureMatcher::AddImages, py::return_value_policy::reference_internal)
-      .def("AddImages", (void (theia::FeatureMatcher::*)(const std::string& )) &theia::FeatureMatcher::AddImages, py::return_value_policy::reference_internal)
+      .def("AddImage", (void (theia::FeatureMatcher::*)(const std::string& )) &theia::FeatureMatcher::AddImage, py::return_value_policy::reference_internal)
       .def("MatchImages", &theia::FeatureMatcher::MatchImages)
       .def("SetImagePairsToMatch", &theia::FeatureMatcher::SetImagePairsToMatch)
 
@@ -134,9 +104,9 @@ PYBIND11_MODULE(pytheia_matching, m) {
     //CascadeHashingFeatureMatcher
     py::class_<theia::CascadeHashingFeatureMatcher, theia::FeatureMatcher>(m, "CascadeHashingFeatureMatcher")
       //abstract class in the constructor
-      //.def(py::init<theia::FeatureMatcherOptions, theia::FeaturesAndMatchesDatabase>())
+      .def(py::init<theia::FeatureMatcherOptions, theia::FeaturesAndMatchesDatabase*>())
       .def("AddImages", (void (theia::CascadeHashingFeatureMatcher::*)(const std::vector<std::string>& )) &theia::CascadeHashingFeatureMatcher::AddImages, py::return_value_policy::reference_internal)
-      .def("AddImages", (void (theia::CascadeHashingFeatureMatcher::*)(const std::string& )) &theia::CascadeHashingFeatureMatcher::AddImages, py::return_value_policy::reference_internal)
+      .def("AddImage", (void (theia::CascadeHashingFeatureMatcher::*)(const std::string& )) &theia::CascadeHashingFeatureMatcher::AddImage, py::return_value_policy::reference_internal)
 
 
     ;
