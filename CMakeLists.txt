@@ -115,11 +115,11 @@ set(THEIA_ABI_VERSION 0.7.0)
 
 # THEIA data directory
 add_definitions(-DTHEIA_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
-#option(PYTHON_EXECUTABLE "Python path" "/home/shengyu/anaconda3/envs/theia_binding/bin/python")
-set(PYTHON_EXECUTABLE /home/shengyu/anaconda3/envs/theia_binding/bin/python CACHE FILEPATH
-    "Using the anaconda interpreter from the environment theia_binding"
+#option(PYTHON_EXECUTABLE "Python path" "/home/shengyu/anaconda3/envs/image/bin/python")
+set(PYTHON_EXECUTABLE /home/shengyu/anaconda3/envs/image/bin/python CACHE FILEPATH
+    "Using the anaconda interpreter from the environment image"
     FORCE)
-set(PYTHON_LIBRARY /home/shengyu/anaconda3/envs/theia_binding/lib/libpython3.8.so CACHE FILEPATH
+set(PYTHON_LIBRARY /home/shengyu/anaconda3/envs/image/lib/libpython3.8.so CACHE FILEPATH
     "Path to a library"
     FORCE)
 

@@ -17,11 +17,14 @@
 #include "theia/matching/cascade_hashing_feature_matcher.h"
 #include "theia/matching/cascade_hasher.h"
 #include "theia/matching/rocksdb_features_and_matches_database.h"
+//#include "theia/matching/local_features_and_matches_database.h"
+#include "theia/matching/in_memory_features_and_matches_database.h"
 
 namespace py = pybind11;
 
 
 PYBIND11_MODULE(pytheia_matching, m) {
+
 
     //FeaturesAndMatchesDatabase
     py::class_<theia::FeaturesAndMatchesDatabase /*, theia::PyFeaturesAndMatchesDatabase */>(m, "FeaturesAndMatchesDatabase")
@@ -36,20 +39,45 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
     ;
 
+    //InMemoryFeaturesAndMatchesDatabase
 
-    //TwoViewMatchGeometricVerification Options
-    py::class_<theia::TwoViewMatchGeometricVerification::Options>(m, "TwoViewMatchGeometricVerificationOptions")
+    py::class_<theia::InMemoryFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "InMemoryFeaturesAndMatchesDatabase")
+      .def(py::init<>())
+      .def("ContainsFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsFeatures)
+      .def("GetFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::GetFeatures)
+      .def("PutFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::PutFeatures)
+      .def("ImageNamesOfFeatures", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
+      .def("NumImages", &theia::InMemoryFeaturesAndMatchesDatabase::NumImages)
+      .def("GetImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::GetImagePairMatch)
+      .def("PutImagePairMatch", &theia::InMemoryFeaturesAndMatchesDatabase::PutImagePairMatch)
+      .def("NumMatches", &theia::InMemoryFeaturesAndMatchesDatabase::NumMatches)
+      .def("PutCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::PutCameraIntrinsicsPrior)
+      .def("GetCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::GetCameraIntrinsicsPrior)
+      .def("NumCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::NumCameraIntrinsicsPrior)
+      .def("ImageNamesOfCameraIntrinsicsPriors", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfCameraIntrinsicsPriors)
+      .def("ImageNamesOfMatches", &theia::InMemoryFeaturesAndMatchesDatabase::ImageNamesOfMatches)
+      .def("ContainsCameraIntrinsicsPrior", &theia::InMemoryFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
 
-      .def_readwrite("min_num_inlier_matches", &theia::TwoViewMatchGeometricVerification::Options::min_num_inlier_matches)
-      .def_readwrite("guided_matching", &theia::TwoViewMatchGeometricVerification::Options::guided_matching)
-      .def_readwrite("guided_matching_max_distance_pixels", &theia::TwoViewMatchGeometricVerification::Options::guided_matching_max_distance_pixels)
-      .def_readwrite("guided_matching_lowes_ratio", &theia::TwoViewMatchGeometricVerification::Options::guided_matching_lowes_ratio)
-      .def_readwrite("bundle_adjustment", &theia::TwoViewMatchGeometricVerification::Options::bundle_adjustment)
-      .def_readwrite("triangulation_max_reprojection_error", &theia::TwoViewMatchGeometricVerification::Options::triangulation_max_reprojection_error)
-      .def_readwrite("min_triangulation_angle_degrees", &theia::TwoViewMatchGeometricVerification::Options::min_triangulation_angle_degrees)
-      .def_readwrite("final_max_reprojection_error", &theia::TwoViewMatchGeometricVerification::Options::final_max_reprojection_error)
 
     ;
+/*
+    //LocalFeaturesAndMatchesDatabase
+
+    py::class_<theia::LocalFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "LocalFeaturesAndMatchesDatabase")
+      .def(py::init<std::string>())
+      .def("ContainsFeatures", &theia::LocalFeaturesAndMatchesDatabase::ContainsFeatures)
+      .def("GetFeatures", &theia::LocalFeaturesAndMatchesDatabase::GetFeatures)
+      .def("PutFeatures", &theia::LocalFeaturesAndMatchesDatabase::PutFeatures)
+      .def("ImageNamesOfFeatures", &theia::LocalFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
+      .def("NumImages", &theia::LocalFeaturesAndMatchesDatabase::NumImages)
+      .def("GetImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::GetImagePairMatch)
+      .def("PutImagePairMatch", &theia::LocalFeaturesAndMatchesDatabase::PutImagePairMatch)
+      .def("NumMatches", &theia::LocalFeaturesAndMatchesDatabase::NumMatches)
+      .def("SaveMatchesAndGeometry", &theia::LocalFeaturesAndMatchesDatabase::SaveMatchesAndGeometry)
+
+    ;
+
+*/
 
     //FeatureMatcherOptions
     py::class_<theia::FeatureMatcherOptions>(m, "FeatureMatcherOptions")

@@ -133,7 +133,7 @@ bool TwoViewMatchGeometricVerification::VerifyMatches(
                            &inlier_indices)) {
     return false;
   }
-  VLOG(2) << inlier_indices.size()
+  LOG(ERROR) << inlier_indices.size()
           << " matches passed initial geometric verification out of "
           << matches_.size() << " putative matches.";
 
@@ -240,7 +240,7 @@ void TwoViewMatchGeometricVerification::TriangulatePoints(
     triangulated_points->emplace_back(point3d);
     triangulated_matches.emplace_back(matches_[i]);
   }
-  VLOG(2) << "Num acceptable triangulations = " << triangulated_matches.size()
+  LOG(ERROR) << "Num acceptable triangulations = " << triangulated_matches.size()
           << " out of " << matches_.size() << " total matches. "
           << num_bad_triangulation_angles
           << " matches failed due to bad triangulation angles, "
@@ -309,7 +309,7 @@ bool TwoViewMatchGeometricVerification::BundleAdjustRelativePose(
       inliers_after_ba.emplace_back(matches_[i]);
     }
   }
-  VLOG(2) << inliers_after_ba.size() << " valid matches after BA out of "
+  LOG(ERROR) << inliers_after_ba.size() << " valid matches after BA out of "
           << matches_.size() << " triangulated matches.";
   matches_.swap(inliers_after_ba);
 

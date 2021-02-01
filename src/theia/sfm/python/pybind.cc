@@ -87,6 +87,7 @@
 #include "theia/sfm/reconstruction_estimator.h"
 #include "theia/sfm/reconstruction_estimator_options.h"
 #include "theia/sfm/reconstruction_builder.h"
+#include "theia/sfm/global_reconstruction_estimator.h"
 #include "theia/sfm/incremental_reconstruction_estimator.h"
 #include "theia/sfm/hybrid_reconstruction_estimator.h"
 #include "theia/sfm/track_builder.h"
@@ -611,6 +612,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("GetFeature", &theia::View::GetFeature, py::return_value_policy::reference)
     .def("Camera", &theia::View::Camera, "Camera class object")
     .def("CameraIntrinsicsPrior", &theia::View::CameraIntrinsicsPrior)
+    .def("MutableCameraIntrinsicsPrior", &theia::View::MutableCameraIntrinsicsPrior, py::return_value_policy::reference)
 
   ;
   // Visibility pyramid
@@ -619,6 +621,8 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("AddPoint", &theia::VisibilityPyramid::AddPoint)
     .def("ComputeScore", &theia::VisibilityPyramid::ComputeScore)
   ;
+
+
 
   // TwoViewMatchGeometricVerification Options
   py::class_<theia::TwoViewMatchGeometricVerification::Options>(m, "TwoViewMatchGeometricVerificationOptions")
@@ -635,13 +639,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
-  // KeypointsAndDescriptors
-  py::class_<theia::KeypointsAndDescriptors>(m, "KeypointsAndDescriptors")
-    .def(py::init<>())
-    .def_readwrite("image_name", &theia::KeypointsAndDescriptors::image_name)
-    .def_readwrite("keypoints", &theia::KeypointsAndDescriptors::keypoints)
-    .def_readwrite("descriptors", &theia::KeypointsAndDescriptors::descriptors)
-  ;
+
 
   // TwoViewMatchGeometricVerification
   py::class_<theia::TwoViewMatchGeometricVerification>(m, "TwoViewMatchGeometricVerification")
@@ -664,8 +662,9 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
     //.def("GetFeature", &theia::View::GetFeature, py::return_value_policy::reference)
     .def("Point", &theia::Track::Point)
+    .def("MutablePoint", &theia::Track::MutablePoint, py::return_value_policy::reference)
     .def("Color", &theia::Track::Color)
-
+    .def("MutableColor", &theia::Track::MutableColor, py::return_value_policy::reference)
   ;
 
   // Track builder class
@@ -725,6 +724,12 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   // Reconstruction Estimator class
   py::class_<theia::ReconstructionEstimator>(m, "ReconstructionEstimator")
     .def_static("Create", &theia::ReconstructionEstimator::Create, py::return_value_policy::reference)
+  ;
+
+  // not sure about pointer  GlobalReconstructionEstimator
+  py::class_<theia::GlobalReconstructionEstimator, theia::ReconstructionEstimator>(m, "GlobalReconstructionEstimator")
+    .def(py::init<theia::ReconstructionEstimatorOptions>())
+    .def("Estimate", &theia::GlobalReconstructionEstimator::Estimate)
   ;
 
   // not sure about pointer  IncrementalReconstructionEstimator
@@ -866,7 +871,10 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
 
     .def("View", &theia::Reconstruction::View, py::return_value_policy::reference)
+    .def("MutableView", &theia::Reconstruction::MutableView, py::return_value_policy::reference)
     .def("Track", &theia::Reconstruction::Track, py::return_value_policy::reference)
+    .def("MutableTrack", &theia::Reconstruction::MutableTrack, py::return_value_policy::reference)
+
 
   ;
 

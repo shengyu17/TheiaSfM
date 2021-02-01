@@ -124,14 +124,16 @@ void FeatureMatcher::MatchImages() {
   }
   // Wait for all threads to finish.
   pool.reset(nullptr);
-
-  VLOG(1) << "Matched " << feature_and_matches_db_->NumMatches()
+  std::cout<<"matching close to finished"<<std::endl;
+  LOG(WARNING) << "Matched " << feature_and_matches_db_->NumMatches()
           << " image pairs out of " << num_matches
           << " pairs selected for matching.";
+  std::cout<<"matching finished"<<std::endl;
 }
 
 void FeatureMatcher::MatchAndVerifyImagePairs(const int start_index,
                                               const int end_index) {
+  std::cout<<"starting index end index are:"<<start_index<<end_index<<std::endl;
   for (int i = start_index; i < end_index; i++) {
     const std::string image1_name = pairs_to_match_[i].first;
     const std::string image2_name = pairs_to_match_[i].second;
@@ -141,6 +143,7 @@ void FeatureMatcher::MatchAndVerifyImagePairs(const int start_index,
     ImagePairMatch image_pair_match;
     image_pair_match.image1 = image1_name;
     image_pair_match.image2 = image2_name;
+    std::cout<<"Matching of image"<<image1_name << "and image"<<image2_name<< "starts"<<std::endl;
 
     // Get the keypoints and descriptors from the db.
     const KeypointsAndDescriptors& features1 =
@@ -151,7 +154,7 @@ void FeatureMatcher::MatchAndVerifyImagePairs(const int start_index,
     // Compute the visual matches from feature descriptors.
     std::vector<IndexedFeatureMatch> putative_matches;
     if (!MatchImagePair(features1, features2, &putative_matches)) {
-      VLOG(2)
+      LOG(ERROR)
           << "Could not match a sufficient number of features between images "
           << image1_name << " and " << image2_name;
       continue;
@@ -162,7 +165,7 @@ void FeatureMatcher::MatchAndVerifyImagePairs(const int start_index,
       // If geometric verification fails, do not add the match to the output.
       if (!GeometricVerification(
               features1, features2, putative_matches, &image_pair_match)) {
-        VLOG(2) << "Geometric verification between images " << image1_name
+        LOG(ERROR) << "Geometric verification between images " << image1_name
                 << " and " << image2_name << " failed.";
         continue;
       }
@@ -182,12 +185,18 @@ void FeatureMatcher::MatchAndVerifyImagePairs(const int start_index,
     }
 
     // Log information about the matching results.
-    VLOG(1) << "Images " << image1_name << " and " << image2_name
+    LOG(WARNING) << "Images " << image1_name << " and " << image2_name
             << " were matched with " << image_pair_match.correspondences.size()
             << " verified matches and "
             << image_pair_match.twoview_info.num_homography_inliers
             << " homography matches out of " << putative_matches.size()
             << " putative matches.";
+    std::cout << "Images " << image1_name << " and " << image2_name
+            << " were matched with " << image_pair_match.correspondences.size()
+            << " verified matches and "
+            << image_pair_match.twoview_info.num_homography_inliers
+            << " homography matches out of " << putative_matches.size()
+            << " putative matches." <<std::endl;
 
     // This operation is thread safe.
     feature_and_matches_db_->PutImagePairMatch(
