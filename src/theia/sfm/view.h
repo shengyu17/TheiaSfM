@@ -73,6 +73,7 @@ class View {
 
   const struct CameraIntrinsicsPrior& CameraIntrinsicsPrior() const;
   struct CameraIntrinsicsPrior* MutableCameraIntrinsicsPrior();
+  void SetCameraIntrinsicsPrior(struct CameraIntrinsicsPrior prior);
 
   int NumFeatures() const;
 

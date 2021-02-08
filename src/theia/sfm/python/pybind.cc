@@ -611,7 +611,9 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def("GetFeature", &theia::View::GetFeature, py::return_value_policy::reference)
     .def("Camera", &theia::View::Camera, "Camera class object")
     .def("CameraIntrinsicsPrior", &theia::View::CameraIntrinsicsPrior)
+    .def("SetCameraIntrinsicsPrior", &theia::View::SetCameraIntrinsicsPrior)
     .def("MutableCameraIntrinsicsPrior", &theia::View::MutableCameraIntrinsicsPrior, py::return_value_policy::reference)
+    .def("MutableCamera", &theia::View::MutableCamera, py::return_value_policy::reference)
 
   ;
   // Visibility pyramid
