@@ -15,6 +15,7 @@
 
 // header files
 /*
+
 #include "theia/sfm/pose/perspective_three_point.h"
 #include "theia/sfm/pose/eight_point_fundamental_matrix.h"
 #include "theia/sfm/pose/five_point_relative_pose.h"
@@ -35,6 +36,8 @@
 #include "theia/matching/feature_correspondence.h"
 #include "theia/sfm/pose/fundamental_matrix_util.h"
 */
+#include "theia/matching/features_and_matches_database.h"
+
 #include "theia/sfm/pose/pose_wrapper.h"
 #include "theia/sfm/triangulation/triangulation.h"
 #include "theia/sfm/triangulation/triangulation_wrapper.h"
@@ -153,13 +156,7 @@ void AddIntrinsicsPriorType(py::module& m, const std::string& name) {
 PYBIND11_MODULE(pytheia_sfm, m) {
   //msub = m.def_submodule("io", jhkl);
 
-  //matching
-  py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
-    .def(py::init())
-    .def(py::init<Eigen::Vector2d, Eigen::Vector2d>())
-    .def_readwrite("feature1", &theia::FeatureCorrespondence::feature1)
-    .def_readwrite("feature2", &theia::FeatureCorrespondence::feature2)
-  ;
+
 
   //camera
   AddIntrinsicsPriorType<1>(m, "Scalar");
@@ -321,6 +318,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def(py::init())
     .def(py::init<theia::Camera>())
     .def(py::init<theia::CameraIntrinsicsModelType>())
+    .def("DeepCopy", &theia::Camera::DeepCopy)
     .def("CameraIntrinsics", &theia::Camera::CameraIntrinsics, py::return_value_policy::reference)
     .def("SetFromCameraIntrinsicsPriors", &theia::Camera::SetFromCameraIntrinsicsPriors)
     .def("CameraIntrinsicsPriorFromIntrinsics", &theia::Camera::CameraIntrinsicsPriorFromIntrinsics)
@@ -776,6 +774,12 @@ PYBIND11_MODULE(pytheia_sfm, m) {
     .def_readwrite("min_track_length", &theia::ReconstructionBuilderOptions::min_track_length)
     .def_readwrite("max_track_length", &theia::ReconstructionBuilderOptions::max_track_length)
     .def_readwrite("min_num_inlier_matches", &theia::ReconstructionBuilderOptions::min_num_inlier_matches)
+    .def_readwrite("descriptor_type", &theia::ReconstructionBuilderOptions::descriptor_type)
+    .def_readwrite("feature_density", &theia::ReconstructionBuilderOptions::feature_density)
+    .def_readwrite("matching_strategy", &theia::ReconstructionBuilderOptions::matching_strategy)
+    .def_readwrite("matching_options", &theia::ReconstructionBuilderOptions::matching_options)
+    .def_readwrite("reconstruction_estimator_options", &theia::ReconstructionBuilderOptions::reconstruction_estimator_options)
+
     .def_readwrite("features_and_matches_database_directory", &theia::ReconstructionBuilderOptions::features_and_matches_database_directory)
     .def_readwrite("select_image_pairs_with_global_image_descriptor_matching", &theia::ReconstructionBuilderOptions::select_image_pairs_with_global_image_descriptor_matching)
     .def_readwrite("num_nearest_neighbors_for_global_descriptor_matching", &theia::ReconstructionBuilderOptions::num_nearest_neighbors_for_global_descriptor_matching)
@@ -787,6 +791,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   // Reconstruction Builder
   py::class_<theia::ReconstructionBuilder>(m, "ReconstructionBuilder")
     //.def(py::init<>())
+    .def(py::init<theia::ReconstructionBuilderOptions, theia::FeaturesAndMatchesDatabase*>())
     .def("AddImage", (bool (theia::ReconstructionBuilder::*)(const std::string& )) &theia::ReconstructionBuilder::AddImage)
     .def("AddImage", (bool (theia::ReconstructionBuilder::*)(const std::string&,  unsigned int )) &theia::ReconstructionBuilder::AddImage)
     .def("AddImageWithCameraIntrinsicsPrior", (bool (theia::ReconstructionBuilder::*)(const std::string&, const theia::CameraIntrinsicsPrior& )) &theia::ReconstructionBuilder::AddImageWithCameraIntrinsicsPrior)
@@ -825,6 +830,7 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   // ReconstructionEstimatorOptions
   py::class_<theia::ReconstructionEstimatorOptions>(m, "ReconstructionEstimatorOptions")
     .def(py::init<>())
+
     .def_readwrite("reconstruction_estimator_type", &theia::ReconstructionEstimatorOptions::reconstruction_estimator_type)
     .def_readwrite("global_position_estimator_type", &theia::ReconstructionEstimatorOptions::global_position_estimator_type)
     .def_readwrite("global_rotation_estimator_type", &theia::ReconstructionEstimatorOptions::global_rotation_estimator_type)

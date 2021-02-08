@@ -65,6 +65,7 @@ class Prior {
       for(int i=0;i<N;i++){
           this->value[i] = parameters[i];
       }
+      is_set = true;
   }
 
 

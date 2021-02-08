@@ -7,6 +7,7 @@
 #include <Eigen/Core>
 #include <pybind11/numpy.h>
 
+#include "theia/sfm/feature.h"
 #include "theia/matching/keypoints_and_descriptors.h"
 #include "theia/matching/indexed_feature_match.h"
 #include "theia/matching/feature_matcher.h"
@@ -19,7 +20,7 @@
 #include "theia/matching/rocksdb_features_and_matches_database.h"
 //#include "theia/matching/local_features_and_matches_database.h"
 #include "theia/matching/in_memory_features_and_matches_database.h"
-
+#include "theia/matching/create_feature_matcher.h"
 namespace py = pybind11;
 
 
@@ -116,6 +117,13 @@ PYBIND11_MODULE(pytheia_matching, m) {
       .def_readwrite("distance", &theia::IndexedFeatureMatch::distance)
     ;
 
+    py::class_<theia::FeatureCorrespondence>(m, "FeatureCorrespondence")
+      .def(py::init<>())
+      .def(py::init<theia::Feature, theia::Feature>())
+      .def_readwrite("feature1", &theia::FeatureCorrespondence::feature1)
+      .def_readwrite("feature2", &theia::FeatureCorrespondence::feature2)
+
+    ;
 
 
     //FeatureMatcher
@@ -147,6 +155,13 @@ PYBIND11_MODULE(pytheia_matching, m) {
 
 
     ;
+
+    py::enum_<theia::MatchingStrategy>(m, "MatchingStrategy")
+      .value("GLOBAL", theia::MatchingStrategy::BRUTE_FORCE)
+      .value("INCREMENTAL", theia::MatchingStrategy::CASCADE_HASHING)
+      .export_values()
+    ;
+
 
 
 }
