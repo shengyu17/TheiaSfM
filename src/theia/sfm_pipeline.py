@@ -4,7 +4,7 @@ import cv2
 import glob
 
 #  pytheia camera module
-from pytheia_sfm import Camera, PinholeRadialTangentialCameraModel, CameraIntrinsicsPrior, CameraIntrinsicsModeType
+from pytheia_sfm import Camera, PinholeRadialTangentialCameraModel, CameraIntrinsicsPrior, CameraIntrinsicsModelType
 
 # 
 from pytheia_image import Keypoint, KeypointType
@@ -42,6 +42,8 @@ def match_image_pair(image_file_path1, image_file_path2):
     img2_name = remove_prefix_and_suffix(image_file_path2)
     view_id1 = recon.ViewIdFromName(img1_name)
     view_id2 = recon.ViewIdFromName(img2_name)
+    print('Matching between image {} and {}  starts...'.format(img1_name, img2_name))
+
     img1 = cv2.imread(image_file_path1)
     img2 = cv2.imread(image_file_path2)
 
@@ -106,7 +108,7 @@ def match_image_pair(image_file_path1, image_file_path2):
 
 def remove_prefix_and_suffix(image_file):
     if image_file.endswith('.jpeg'):
-        image_name = image_file[7:-5]
+        image_name = image_file[5:-5]  # for milk folder
     
     return image_name
 
@@ -245,7 +247,7 @@ if __name__ == "__main__":
     prior.camera_intrinsics_model_type = 'PINHOLE_RADIAL_TANGENTIAL'
 
     # pinhole radial tangential camera
-    camera = Camera(CameraIntrinsicsModeType(1))
+    camera = Camera(CameraIntrinsicsModelType(1))
     camera.SetFromCameraIntrinsicsPriors(prior)
 
 
@@ -256,12 +258,13 @@ if __name__ == "__main__":
         image_names.append(remove_prefix_and_suffix(image_file))
     
     print('{} images have been found'.format(len(images_files)))
+    print('Image files: {}'.format(images_files))
 
     for image_name in image_names:
         view_id = recon.AddView(image_name, 0)
-        c = recon.MutableView(id).MutableCamera()
+        c = recon.MutableView(view_id).MutableCamera()
         c.DeepCopy(camera)
-        recon.MutableView(id).MutableCameraIntrinsicsPrior() = c.CameraIntrinsicsPriorFromIntrinsics()
+        recon.MutableView(view_id).SetCameraIntrinsicsPrior(c.CameraIntrinsicsPriorFromIntrinsics()) 
 
     #features_and_matches_db = extract_features_theia(images_files)
     #images_and_keypoints, images_and_descriptors = extract_features_opencv(images_files)
@@ -274,10 +277,16 @@ if __name__ == "__main__":
         for j in range(i+1, num_images):
             success, imagepair_match = match_image_pair(images_files[i], images_files[j])
             if success == True:
-                view_graph.AddEdge(1, 2, imagepair_match.twoview_info)
+                view_id1 = recon.ViewIdFromName(imagepair_match.image1)
+                view_id2 = recon.ViewIdFromName(imagepair_match.image2)
+                view_graph.AddEdge(view_id1, view_id2, imagepair_match.twoview_info)
+                print("Match between image {} and image {}. ".format(imagepair_match.image1, imagepair_match.image2))
+                print("Match between image index {} and image index {}.\n\n ".format(i, j))
             else:
-                print("No match between image {} and image {}. ".format(i, j))
+                print("No match between image {} and image {}. ".format(remove_prefix_and_suffix(images_files[i]), remove_prefix_and_suffix(images_files[j])))
+                print("No match between image index {} and image index {}.\n\n ".format(i, j))
     
+    print('{} edges were added to the view graph.'.format(view_graph.NumEdges))
     track_builder.BuildTracks(recon)
     options = ReconstructionEstimatorOptions()
     options.num_threads = 7
@@ -291,6 +300,6 @@ if __name__ == "__main__":
     global_estimator = GlobalReconstructionEstimator(options)
     recon_sum = global_estimator.Estimate(view_graph, recon)
 
-    #std::cout << recon_sum.message << "\n";
+    print('Reconstruction summary message: {}'.format(recon_sum.message))
     WritePlyFile("test.ply", recon, 2)
     WriteReconstruction(recon, "reconstruction_file")
