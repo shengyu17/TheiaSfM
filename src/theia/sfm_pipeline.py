@@ -2,6 +2,7 @@ import numpy as np
 import cv2 
 #from camera_calibration import mtx, dist
 import glob
+import argparse
 
 #  pytheia camera module
 from pytheia_sfm import Camera, PinholeRadialTangentialCameraModel, CameraIntrinsicsPrior, CameraIntrinsicsModelType
@@ -125,92 +126,9 @@ def correspondence_from_indexed_matches(filtered_matches, pts1, pts2):
 
     return correspondences
 
-def match_features_opencv(images_files, images_and_keypoints, images_and_descriptors):
-
-    # create BFMatcher object
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = bf.match(desc1,desc2)
-
-    #descriptor format numpy array num_features * feature vector length
-    
-
-def match_features_theia(images_files):
-
-    fm_options = FeatureMatcherOptions()
-    fm_options.num_threads = 1
-    fm_options.perform_geometric_verification = True
-    fm_options.geometric_verification_options.bundle_adjustment = True
-    fm = BruteForceFeatureMatcher(fm_options, features_and_matches_db)
-    fm.AddImages(images_files)
-    print('Matching images...')
-    fm.MatchImages()
 
 
-def extract_features_opencv(images_files):
-    akaze = cv2.AKAZE_create()
-    images_and_descriptors = {}
-    images_and_keypoints = {}
-    for image_name in images_files:
 
-        img = cv2.imread(image_name)
-        kpts1, desc1 = akaze.detectAndCompute(img, None)
-        pts1 = [p.pt for p in kpts1]
-
-        type = KeypointType(2) # keypoint type is akaze
-        #image_features = KeypointsAndDescriptors()
-        #image_features.image_name = image_name
-        keypoints = []
-        descriptors = []
-        for i in range(len(pts1)):
-            x = pts1[i][0]
-            y = pts1[i][1]
-            keypoint = Keypoint(x, y, type)
-            keypoints.append(keypoint)
-            descriptors.append(desc1[i])
-        print('{} keypoints detected in image {}'.format(len(keypoints), image_name))
-        images_and_keypoints[image_name] = keypoints
-        images_and_descriptors[image_name] = descriptors
-        #image_features.keypoints = keypoints
-        #image_features.descriptors = descriptors
-        #features_and_matches_db.PutFeatures(image_name, image_features)
-        #features_and_matches_db.PutCameraIntrinsicsPrior(image_name, prior)
-
-    return images_and_keypoints, images_and_descriptors
-    
-
-def extract_features_theia(images_files):
-
-    features_and_matches_db = InMemoryFeaturesAndMatchesDatabase()
-    akaze = cv2.AKAZE_create()
-    #orb = cv2.ORB()
-    #kp1, des1 = orb.detectAndCompute(img1,None)
-    #kp2, des2 = orb.detectAndCompute(img2,None)
-    #sift = cv2.SIFT() 
-
-    for image_name in images_files:
-
-        img = cv2.imread(image_name)
-        kpts1, desc1 = akaze.detectAndCompute(img, None)
-        pts1 = [p.pt for p in kpts1]
-
-        type = KeypointType(2) # keypoint type is akaze
-        image_features = KeypointsAndDescriptors()
-        image_features.image_name = image_name
-        keypoints = []
-        descriptors = []
-        for i in range(len(pts1)):
-            x = pts1[i][0]
-            y = pts1[i][1]
-            keypoint = Keypoint(x, y, type)
-            keypoints.append(keypoint)
-            descriptors.append(desc1[i])
-        print('{} keypoints detected in image {}'.format(len(keypoints), image_name))
-        image_features.keypoints = keypoints
-        image_features.descriptors = descriptors
-        features_and_matches_db.PutFeatures(image_name, image_features)
-        features_and_matches_db.PutCameraIntrinsicsPrior(image_name, prior)
-
-    return features_and_matches_db
 
 
 
@@ -266,11 +184,7 @@ if __name__ == "__main__":
         c.DeepCopy(camera)
         recon.MutableView(view_id).SetCameraIntrinsicsPrior(c.CameraIntrinsicsPriorFromIntrinsics()) 
 
-    #features_and_matches_db = extract_features_theia(images_files)
-    #images_and_keypoints, images_and_descriptors = extract_features_opencv(images_files)
 
-    #match_features_opencv(images_and_keypoints, images_and_descriptors, images_files)
-    #match_features_theia(images_files)
 
     num_images = len(images_files)
     for i in range(num_images):
