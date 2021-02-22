@@ -25,7 +25,7 @@ from pytheia_sfm import RansacType
 
 from pytheia_matching import FeatureCorrespondence, IndexedFeatureMatch, ImagePairMatch
 
-from pytheia_sfm import ViewGraph, Reconstruction, TrackBuilder, LossFunctionType, GlobalReconstructionEstimator, ReconstructionEstimatorSummary
+from pytheia_sfm import ViewGraph, Reconstruction, TrackBuilder, LossFunctionType, GlobalReconstructionEstimator, IncrementalReconstructionEstimator, HybridReconstructionEstimator, ReconstructionEstimatorSummary
 
 # Reconstruction related import 
 from pytheia_matching import MatchingStrategy
@@ -37,7 +37,7 @@ from pytheia_sfm import ReconstructionBuilderOptions, ReconstructionBuilder
 
 from pytheia_io import WritePlyFile, WriteReconstruction
 
-def match_image_pair(image_file_path1, image_file_path2):
+def match_image_pair(image_file_path1, image_file_path2, featuretype, matchertype):
 
     img1_name = remove_prefix_and_suffix(image_file_path1)
     img2_name = remove_prefix_and_suffix(image_file_path2)
@@ -48,21 +48,28 @@ def match_image_pair(image_file_path1, image_file_path2):
     img1 = cv2.imread(image_file_path1)
     img2 = cv2.imread(image_file_path2)
 
-    akaze = cv2.AKAZE_create()
+    if featuretype == 'akaze':
+        feature = cv2.AKAZE_create()
+    elif featuretype == 'sift':
+        feature = cv2.SIFT_create()
+    
+    
+
     #orb = cv2.ORB()
     #kp1, des1 = orb.detectAndCompute(img1,None)
     #kp2, des2 = orb.detectAndCompute(img2,None)
     #sift = cv2.SIFT()
-    kpts1, desc1 = akaze.detectAndCompute(img1, None)
-    kpts2, desc2 = akaze.detectAndCompute(img2, None)   
+    kpts1, desc1 = feature.detectAndCompute(img1, None)
+    kpts2, desc2 = feature.detectAndCompute(img2, None)   
 
     pts1 = [p.pt for p in kpts1]
     pts2 = [p.pt for p in kpts2]
 
     # create BFMatcher object
+    if matchertype == 'bf':
+        matcher = cv2.BFMatcher()
 
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(desc1,desc2,k=2)
+    matches = matcher.knnMatch(desc1,desc2,k=2)
     #bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
     #matches = bf.knnMatch(desc1,desc2, k=2)
 
@@ -81,6 +88,13 @@ def match_image_pair(image_file_path1, image_file_path2):
     correspondences = correspondence_from_indexed_matches(filtered_matches, pts1, pts2)
 
     options = EstimateTwoViewInfoOptions()
+    if ransactype == 'ransac':
+        options.ransac_type = RansacType(0)
+    elif ransactype == 'prosac':
+        options.ransac_type = RansacType(1)
+    elif ransactype == 'lmed':
+        options.ransac_type = RansacType(2)
+
     success, twoview_info, inlier_indices = EstimateTwoViewInfo(options, prior, prior, correspondences)
 
     print('Only {} matches survived after geometric verification'.format(len(inlier_indices)))
@@ -134,6 +148,22 @@ def correspondence_from_indexed_matches(filtered_matches, pts1, pts2):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Argument parser for sfm pipeline')
+    parser.add_argument('feature', metavar='feature', type=str, 
+                    help='feature descriptor type')
+    parser.add_argument('matcher', metavar='matcher', type=str,
+                    help='feature matcher type')
+    parser.add_argument('ransac', metavar='ransac', type=str, 
+                    help='ransac type for estimator')
+    parser.add_argument('reconstruction', metavar='reconstruction', type=str, 
+                    help='reconstruction type')
+
+    args = parser.parse_args()
+    ransactype = args.ransac
+    featuretype = args.feature
+    matchertype = args.matcher
+    reconstructiontype = args.reconstruction
+
     #Pipeline starts
     print('Pipeline starts...')
 
@@ -189,7 +219,7 @@ if __name__ == "__main__":
     num_images = len(images_files)
     for i in range(num_images):
         for j in range(i+1, num_images):
-            success, imagepair_match = match_image_pair(images_files[i], images_files[j])
+            success, imagepair_match = match_image_pair(images_files[i], images_files[j], featuretype, matchertype)
             if success == True:
                 view_id1 = recon.ViewIdFromName(imagepair_match.image1)
                 view_id2 = recon.ViewIdFromName(imagepair_match.image2)
@@ -210,9 +240,13 @@ if __name__ == "__main__":
     options.subsample_tracks_for_bundle_adjustment = True
     options.filter_relative_translations_with_1dsfm = True
 
-
-    global_estimator = GlobalReconstructionEstimator(options)
-    recon_sum = global_estimator.Estimate(view_graph, recon)
+    if reconstructiontype == 'global':
+        reconstruction_estimator = GlobalReconstructionEstimator(options)
+    elif reconstructiontype == 'incremental':
+        reconstruction_estimator = IncrementalReconstructionEstimator(options)
+    elif reconstructiontype == 'hybrid':
+        reconstruction_estimator = HybridReconstructionEstimator(options)
+    recon_sum = reconstruction_estimator.Estimate(view_graph, recon)
 
     print('Reconstruction summary message: {}'.format(recon_sum.message))
     WritePlyFile("test.ply", recon, 2)
