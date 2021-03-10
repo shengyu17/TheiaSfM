@@ -116,12 +116,30 @@ set(THEIA_ABI_VERSION 0.7.0)
 # THEIA data directory
 add_definitions(-DTHEIA_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
 #option(PYTHON_EXECUTABLE "Python path" "/home/shengyu/anaconda3/envs/image/bin/python")
-set(PYTHON_EXECUTABLE /home/shengyu/anaconda3/envs/image/bin/python CACHE FILEPATH
-    "Using the anaconda interpreter from the environment image"
-    FORCE)
-set(PYTHON_LIBRARY /home/shengyu/anaconda3/envs/image/lib/libpython3.8.so CACHE FILEPATH
-    "Path to a library"
-    FORCE)
+
+
+#set(PYTHON_EXECUTABLE /home/shengyu/anaconda3/envs/image/bin/python CACHE FILEPATH
+#    "Using the anaconda interpreter from the environment image"
+#    FORCE)
+#set(PYTHON_INCLUDE_DIR /home/shengyu/anaconda3/envs/image/include/python3.8 CACHE FILEPATH
+#    "Path to a header file"
+#    FORCE)
+#set(PYTHON_LIBRARY /home/shengyu/anaconda3/envs/image/lib/libpython3.8.so CACHE FILEPATH
+#    "Path to a library"
+#    FORCE)
+
+# Find python version
+#message("-- Check for Python version")
+#find_package (Python COMPONENTS Interpreter Development)
+#if (PYTHON_FOUND)
+#  message("-- Found Python include directory: ${PYTHON_INCLUDE_DIRS}")
+#  message("-- Found Python library: ${Python_LIBRARIES}")
+#  message("-- Found Python executable: ${Python_EXECUTABLE}")
+#else (PYTHON_FOUND)
+#  message(FATAL_ERROR "Can't find available Python version")
+#endif (PYTHON_FOUND)
+
+
 
 
 # Eigen
@@ -244,6 +262,7 @@ include_directories(
   ${RAPIDJSON_INCLUDE_DIRS}
   ${ROCKSDB_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR}
 )
 
 # NOTE: This fix came from Ceres solver with the following comment:
