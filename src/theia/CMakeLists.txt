@@ -389,8 +389,8 @@ message("showing test property")
 
 #Add python binding
 
-pybind11_add_module(pytheia python/pybind.cc)
-target_link_libraries(pytheia theia ${THEIA_LIBRARY_DEPENDENCIES} pybind11_headers)
+#pybind11_add_module(pytheia python/pybind.cc)
+#target_link_libraries(pytheia theia ${THEIA_LIBRARY_DEPENDENCIES} pybind11_headers)
 
 #set_target_properties(pytheia PROPERTIES
 #    LIBRARY_OUTPUT_DIRECTORY "${theia_SOURCE_DIR}/.."

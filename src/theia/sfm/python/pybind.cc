@@ -130,6 +130,8 @@
 #include "theia/sfm/set_camera_intrinsics_from_priors.h"
 #include "theia/sfm/set_outlier_tracks_to_unestimated.h"
 #include "theia/sfm/undistort_image.h"
+#include "theia/sfm/pose/upnp.h"
+
 
 
 // for overloaded function in CameraInstrinsicsModel
@@ -410,8 +412,9 @@ PYBIND11_MODULE(pytheia_sfm, m) {
   m.def("AlignPointCloudsUmeyamaWithWeights", theia::AlignPointCloudsUmeyamaWithWeightsWrapper);
   m.def("GdlsSimilarityTransform" ,theia::GdlsSimilarityTransformWrapper);
   m.def("AlignRotations", theia::AlignRotationsWrapper);
-  m.def("AlignReconstructions", theia::AlignReconstructions);
-  m.def("AlignReconstructionsRobust", theia::AlignReconstructionsRobust);
+  m.def("AlignReconstructions", theia::AlignReconstructionsWrapper);
+  m.def("AlignReconstructionsRobust", theia::AlignReconstructionsRobustWrapper);
+  m.def("TransformReconstruction", theia::TransformReconstructionWrapper);
 
   py::class_<theia::SimilarityTransformation>(m, "SimilarityTransformation")
     .def(py::init<>())
@@ -490,26 +493,12 @@ PYBIND11_MODULE(pytheia_sfm, m) {
 
   ;
 
+
+
   // estimator ransac
-  //RansacSummary
-  py::class_<theia::RansacSummary>(m, "RansacSummary")
-    .def_readwrite("inliers", &theia::RansacSummary::inliers)
-    .def_readwrite("num_input_data_points", &theia::RansacSummary::num_input_data_points)
-    .def_readwrite("num_iterations", &theia::RansacSummary::num_iterations)
-    .def_readwrite("confidence", &theia::RansacSummary::confidence)
 
-  ;
 
-  py::class_<theia::RansacParameters>(m, "RansacParameters")
-    .def(py::init<>())
-    .def_readwrite("error_thresh", &theia::RansacParameters::error_thresh)
-    .def_readwrite("failure_probability", &theia::RansacParameters::failure_probability)
-    .def_readwrite("min_inlier_ratio", &theia::RansacParameters::min_inlier_ratio)
-    .def_readwrite("min_iterations", &theia::RansacParameters::min_iterations)
-    .def_readwrite("max_iterations", &theia::RansacParameters::max_iterations)
-    .def_readwrite("use_mle", &theia::RansacParameters::use_mle)
-    .def_readwrite("use_Tdd_test", &theia::RansacParameters::use_Tdd_test)
-  ;
+
 
   py::enum_<theia::RansacType>(m, "RansacType")
     .value("RANSAC", theia::RansacType::RANSAC)

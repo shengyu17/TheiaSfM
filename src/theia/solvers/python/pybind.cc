@@ -60,7 +60,7 @@ PYBIND11_MODULE(pytheia_solvers, m) {
       .def_readwrite("use_mle", &theia::RansacParameters::use_mle)
       .def_readwrite("use_Tdd_test", &theia::RansacParameters::use_Tdd_test)
     ;
-
+    /*
     py::enum_<theia::FittingMethod>(m, "FittingMethod")
       .value("MLE", theia::FittingMethod::MLE)
       .value("QUANTILE_NLS", theia::FittingMethod::QUANTILE_NLS)
@@ -123,6 +123,7 @@ PYBIND11_MODULE(pytheia_solvers, m) {
       .def(py::init<double>())
       .def("ComputeCost", &theia::InlierSupport::ComputeCost)
     ;
+    */
     /*
     py::class_<theia::SampleConsensusEstimator>(m, "SampleConsensusEstimator")
 

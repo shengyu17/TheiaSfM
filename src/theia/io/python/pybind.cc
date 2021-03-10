@@ -37,8 +37,8 @@ PYBIND11_MODULE(pytheia_io, m) {
       //.def_property_readonly("NumListEntries", &theia::BundlerFileReader::NumListEntries)
 
       .def("cameras", &theia::BundlerFileReader::cameras)
-      .def("Write", &theia::BundlerFileReader::points)
-      .def("points", &theia::BundlerFileReader::img_entries)
+      .def("points", &theia::BundlerFileReader::points)
+      .def("img_entries", &theia::BundlerFileReader::img_entries)
       .def("ParseBundleFile", &theia::BundlerFileReader::ParseBundleFile)
       .def("ParseListsFile", &theia::BundlerFileReader::ParseListsFile)
 
@@ -47,10 +47,10 @@ PYBIND11_MODULE(pytheia_io, m) {
     py::class_<theia::BundlerCamera>(m, "BundlerCamera")
       .def(py::init())
       .def_readwrite("translation", &theia::BundlerCamera::translation)
-      .def_readwrite("translation", &theia::BundlerCamera::rotation)
-      .def_readwrite("translation", &theia::BundlerCamera::focal_length)
-      .def_readwrite("translation", &theia::BundlerCamera::radial_coeff_1)
-      .def_readwrite("translation", &theia::BundlerCamera::radial_coeff_2)
+      .def_readwrite("rotation", &theia::BundlerCamera::rotation)
+      .def_readwrite("focal_length", &theia::BundlerCamera::focal_length)
+      .def_readwrite("radial_coeff_1", &theia::BundlerCamera::radial_coeff_1)
+      .def_readwrite("radial_coeff_2", &theia::BundlerCamera::radial_coeff_2)
 
     ;
 
@@ -78,7 +78,7 @@ PYBIND11_MODULE(pytheia_io, m) {
     m.def("ReadKeypointsAndDescriptors", theia::ReadKeypointsAndDescriptorsWrapper);
 
     m.def("ReadStrechaDataset", theia::ReadStrechaDatasetWrapper);
-    m.def("ReadReconstructionWrapper", theia::ReadReconstructionWrapper);
+    m.def("ReadReconstruction", theia::ReadReconstructionWrapper);
     m.def("WriteReconstruction", theia::WriteReconstruction);
     m.def("WriteSiftKeyBinaryFile", theia::WriteSiftKeyBinaryFile);
     m.def("ReadSiftKeyBinaryFile", theia::ReadSiftKeyBinaryFileWrapper);

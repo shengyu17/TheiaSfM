@@ -124,6 +124,7 @@ class Upnp {
                     std::vector<Eigen::Vector3d>* solution_translations,
                     std::vector<double>* solution_costs);
 
+
   bool EstimatePose(const std::vector<Eigen::Vector3d>& ray_origins,
                     const std::vector<Eigen::Vector3d>& ray_directions,
                     const std::vector<Eigen::Vector3d>& world_points,

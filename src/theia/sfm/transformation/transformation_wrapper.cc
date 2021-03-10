@@ -56,6 +56,27 @@ std::vector<Eigen::Vector3d> AlignRotationsWrapper(const std::vector<Eigen::Vect
     return rotation;
 }
 
+Reconstruction AlignReconstructionsWrapper(const Reconstruction& reconstruction1){
+    Reconstruction reconstruction2;
+    AlignReconstructions(reconstruction1, &reconstruction2);
+    return reconstruction2;
+}
+
+
+Reconstruction AlignReconstructionsRobustWrapper(const double robust_error_threshold,
+                                                 const Reconstruction& reconstruction1){
+    Reconstruction reconstruction2;
+    AlignReconstructionsRobust(robust_error_threshold, reconstruction1, &reconstruction2);
+    return reconstruction2;
+}
+
+Reconstruction TransformReconstructionWrapper(const Eigen::Matrix3d& rotation,
+                             const Eigen::Vector3d& translation,
+                             const double scale){
+    Reconstruction reconstruction;
+    TransformReconstruction(rotation, translation, scale, &reconstruction);
+    return reconstruction;
+}
 
 
 } //namespace theia

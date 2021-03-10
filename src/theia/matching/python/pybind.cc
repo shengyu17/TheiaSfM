@@ -7,6 +7,8 @@
 #include <Eigen/Core>
 #include <pybind11/numpy.h>
 
+#include "theia/matching/global_descriptor_extractor.h"
+#include "theia/matching/fisher_vector_extractor.h"
 #include "theia/sfm/feature.h"
 #include "theia/matching/keypoints_and_descriptors.h"
 #include "theia/matching/indexed_feature_match.h"
@@ -38,6 +40,21 @@ PYBIND11_MODULE(pytheia_matching, m) {
     py::class_<theia::RocksDbFeaturesAndMatchesDatabase, theia::FeaturesAndMatchesDatabase>(m, "RocksDbFeaturesAndMatchesDatabase")
       .def(py::init<std::string>())
       .def("ContainsCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsCameraIntrinsicsPrior)
+      .def("GetCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::GetCameraIntrinsicsPrior)
+      .def("PutCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::PutCameraIntrinsicsPrior)
+      .def("ImageNamesOfCameraIntrinsicsPriors", &theia::RocksDbFeaturesAndMatchesDatabase::ImageNamesOfCameraIntrinsicsPriors)
+      .def("NumCameraIntrinsicsPrior", &theia::RocksDbFeaturesAndMatchesDatabase::NumCameraIntrinsicsPrior)
+      .def("ContainsFeatures", &theia::RocksDbFeaturesAndMatchesDatabase::ContainsFeatures)
+      .def("GetFeatures", &theia::RocksDbFeaturesAndMatchesDatabase::GetFeatures)
+      .def("PutFeatures", &theia::RocksDbFeaturesAndMatchesDatabase::PutFeatures)
+      .def("NumImages", &theia::RocksDbFeaturesAndMatchesDatabase::NumImages)
+      .def("GetImagePairMatch", &theia::RocksDbFeaturesAndMatchesDatabase::GetImagePairMatch)
+      .def("PutImagePairMatch", &theia::RocksDbFeaturesAndMatchesDatabase::PutImagePairMatch)
+      .def("ImageNamesOfMatches", &theia::RocksDbFeaturesAndMatchesDatabase::ImageNamesOfMatches)
+      .def("NumMatches", &theia::RocksDbFeaturesAndMatchesDatabase::NumMatches)
+      .def("RemoveAllMatches", &theia::RocksDbFeaturesAndMatchesDatabase::RemoveAllMatches)
+      .def("ImageNamesOfFeatures", &theia::RocksDbFeaturesAndMatchesDatabase::ImageNamesOfFeatures)
+
     ;
 
     //InMemoryFeaturesAndMatchesDatabase
@@ -125,6 +142,30 @@ PYBIND11_MODULE(pytheia_matching, m) {
 
     ;
 
+    //GlobalDescriptorExtractor
+    py::class_<theia::GlobalDescriptorExtractor>(m, "GlobalDescriptorExtractor")
+      //abstract class in the constructor
+
+    ;
+
+    //FisherVectorExtractor Options
+    py::class_<theia::FisherVectorExtractor::Options>(m, "FisherVectorExtractorOptions")
+      .def(py::init<>())
+      .def_readwrite("num_threads", &theia::FisherVectorExtractor::Options::num_gmm_clusters)
+      .def_readwrite("keep_only_symmetric_matches", &theia::FisherVectorExtractor::Options::max_num_features_for_training)
+
+    ;
+
+
+
+    //FisherVectorExtractor
+    py::class_<theia::FisherVectorExtractor, theia::GlobalDescriptorExtractor>(m, "FisherVectorExtractor")
+      .def(py::init<theia::FisherVectorExtractor::Options>())
+      .def("AddFeaturesForTraining", &theia::FisherVectorExtractor::AddFeaturesForTraining)
+      .def("Train", &theia::FisherVectorExtractor::Train)
+      .def("ExtractGlobalDescriptor", &theia::FisherVectorExtractor::ExtractGlobalDescriptor)
+
+    ;
 
     //FeatureMatcher
     py::class_<theia::FeatureMatcher>(m, "FeatureMatcher")
