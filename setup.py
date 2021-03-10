@@ -17,14 +17,14 @@ class platform_bdist_wheel(bdist_wheel):
     def finalize_options(self):
         bdist_wheel.finalize_options(self)
         self.root_is_pure = False
-
+"""
 def _find_packages():
     packages = setuptools.find_packages()
     packages.append('mypythonpackage.doc')
     packages.append('matlabsources')
     print('packages found: {}'.format(packages))
     return packages
-    
+""" 
 
 def configure_c_extension():
     """Configure cmake project to C extension."""
