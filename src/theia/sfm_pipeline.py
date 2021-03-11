@@ -149,20 +149,21 @@ def correspondence_from_indexed_matches(filtered_matches, pts1, pts2):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Argument parser for sfm pipeline')
-    parser.add_argument('feature', metavar='feature', type=str, 
-                    help='feature descriptor type')
-    parser.add_argument('matcher', metavar='matcher', type=str,
-                    help='feature matcher type')
-    parser.add_argument('ransac', metavar='ransac', type=str, 
-                    help='ransac type for estimator')
-    parser.add_argument('reconstruction', metavar='reconstruction', type=str, 
-                    help='reconstruction type')
+    parser.add_argument('--feature', type=str, default='sift',
+                    help='feature descriptor type: sift or akaze')
+    parser.add_argument('--matcher', type=str, default='bf',
+                    help='feature matcher type: bf or cascadehash')
+    parser.add_argument('--ransac', type=str, default='ransac', 
+                    help='ransac type for estimator: ransac, prosac or lmed')
+    parser.add_argument('--reconstruction', type=str, default='global',
+                    help='reconstruction type: global, incremental or hybrid')
 
     args = parser.parse_args()
     ransactype = args.ransac
     featuretype = args.feature
     matchertype = args.matcher
     reconstructiontype = args.reconstruction
+    print('Configurations: ransactype: {}; featuretype: {}; matchertype: {}; reconstructiontype: {}'.format(ransactype, featuretype, matchertype, reconstructiontype))
 
     #Pipeline starts
     print('Pipeline starts...')

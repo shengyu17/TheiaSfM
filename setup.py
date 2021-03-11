@@ -4,6 +4,7 @@ import os
 import setuptools
 import subprocess
 import sys
+from glob import glob
 from wheel.bdist_wheel import bdist_wheel
 
 import distutils.sysconfig as sysconfig
@@ -47,6 +48,14 @@ def build_c_extension():
     subprocess.check_call(['make', '-j4'], cwd='cmake_build')
 
 
+def create_package():
+    subprocess.run(['mkdir', '-p', 'pytheia'], cwd='src')
+    files = glob('cmake_build/lib/*.so')
+    subprocess.run(['cp'] + files + ['src/pytheia'])
+    subprocess.run(['touch', 'src/pytheia/__init__.py'])
+
+
+create_package()
 configure_c_extension()
 build_c_extension()
 
@@ -60,34 +69,29 @@ setuptools.setup(
     project_urls={
         "Documentation": "http://theia-sfm.org/",
     },
-    author='Chris Sweeney',
+    author='Shengyu Yin',
+    author_email = "shengyu952014@outlook.com",
     license='BSD',
-    packages=['pytheia'],
+    packages=setuptools.find_packages(where='src'),
     include_package_data=True,
 
     package_dir={
-        'pytheia': 'cmake_build/lib',
+        'pytheia': 'src/pytheia',
     },
 
-    #data_files=[('cmake_build', [ 'lib/a.txt', 'lib/pytheia_image.cpython-38-x86_64-linux-gnu.so','lib/pytheia_io.*','pytheia_matching.*', 'pytheia_sfm.*','pytheia_solvers.*','libflann_cpp*','libgtest*','libstatx*','libstlplus3*','libvisual_sfm.*','lib/libvlfeat.*']),    ],
-                 
-    
+    package_data={
+        'pytheia': [
+            'pytheia_sfm.*',
+            'pytheia_image.*',
+            'pytheia_io.*',
+            'pytheia_solvers.*',
+            'pytheia_matching.*',
+            'libvlfeat.*',
+            'libflann_cpp.*',
 
-    # install_requires=[
-    #     'cloudpickle>=0.4.0',
-    #     'ExifRead>=2.1.2',
-    #     'gpxpy>=1.1.2',
-    #     'loky>=1.2.1',
-    #     'networkx>=1.11',
-    #     'numpy>=1.13',
-    #     'pyproj>=1.9.5.1',
-    #     'pytest>=3.0.7',
-    #     'python-dateutil>=2.6.0',
-    #     'PyYAML>=3.12',
-    #     'scipy',
-    #     'six',
-    #     'xmltodict>=0.10.2',
-    #     'Pillow>=6.0.0',
-    # ],
+        ]
+    },
+
+
     cmdclass={'bdist_wheel': platform_bdist_wheel},
 )
